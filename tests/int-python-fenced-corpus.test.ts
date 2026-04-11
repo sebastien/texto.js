@@ -1,7 +1,7 @@
 // Test parsing the Python test fixture for fenced blocks
 
 import { describe, test, expect } from "bun:test";
-import { TextoParser } from "../ts/texto/texto";
+import { TextoParser } from "../src/ts/texto/texto";
 import { readFileSync } from "fs";
 import { join } from "path";
 
@@ -20,7 +20,7 @@ describe("Python corpus fenced block test", () => {
 		// Find all pre elements recursively
 		const findPreElements = (node: any): any[] => {
 			const results: any[] = [];
-			if (node.tagName === "pre") {
+			if (node.name === "pre") {
 				results.push(node);
 			}
 			if (node.children) {

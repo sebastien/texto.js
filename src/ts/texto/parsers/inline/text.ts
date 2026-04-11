@@ -1,0 +1,43 @@
+// Text inline parser (fallback)
+
+import type { ParsingContext } from "../../parsing/context.ts";
+import { INLINE_PRIORITIES } from "../../parsing/priority.ts";
+import type { Cursor } from "../../utils/cursor.ts";
+import type { InlineMatch } from "../../utils/types.ts";
+import { BaseInlineParser } from "./base.ts";
+
+export class TextParser extends BaseInlineParser {
+	constructor() {
+		super("text", INLINE_PRIORITIES.TEXT);
+	}
+
+	findNext(cursor: Cursor, _context: ParsingContext): InlineMatch | null {
+		// Text parser just consumes all remaining text
+		// This should be used as a fallback
+		if (cursor.isAtEnd()) {
+			return null;
+		}
+
+		return {
+			start: cursor.pos,
+			end: cursor.length,
+			content: cursor.slice(cursor.pos, cursor.length),
+		};
+	}
+
+	parse(cursor: Cursor, context: ParsingContext, match: InlineMatch): number {
+		// Get current position from cursor for accurate line/column
+		const currentPos = cursor.getPosition();
+
+		// Add as text node with position
+		const textNode = context.builder.addText(match.content, {
+			start: match.start,
+			end: match.end,
+			line: currentPos.line,
+			column: currentPos.column,
+		});
+		context.builder.getCurrentNode().children.push(textNode);
+
+		return match.end;
+	}
+}

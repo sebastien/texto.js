@@ -1,7 +1,7 @@
 // Basic integration test for Texto parser
 
 import { describe, test, expect } from "bun:test";
-import { TextoParser } from "../ts/texto/texto";
+import { TextoParser } from "../src/ts/texto/texto";
 
 describe("TextoParser", () => {
 	test("parses simple paragraph", () => {
@@ -64,6 +64,6 @@ Content here.
 		// Verify basic structure
 		expect(doc.type).toBe("document");
 		expect(doc.content.type).toBe("element");
-		expect(doc.content.tagName).toBe("content");
+		expect(doc.content.name).toBe("content");
 	});
 });

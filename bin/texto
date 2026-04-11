@@ -5,5 +5,5 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Run the texto CLI with bun
-exec bun run "${PROJECT_ROOT}/src/ts/texto/cli/index.ts" "$@"
+# Run the texto CLI with bun (using server.ts for full Node.js API access)
+exec bun run "${PROJECT_ROOT}/src/ts/texto/server.ts" "$@"

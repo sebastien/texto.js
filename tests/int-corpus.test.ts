@@ -2,8 +2,8 @@
 // Tests that all .txto files in texto/tests/ parse correctly and are formatter-stable
 
 import { describe, test, expect } from "bun:test";
-import { TextoParser } from "../ts/texto/texto";
-import { formatTexto } from "../ts/texto/formatters/texto";
+import { TextoParser } from "../src/ts/texto/texto";
+import { formatTexto } from "../src/ts/texto/formatters/texto";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 

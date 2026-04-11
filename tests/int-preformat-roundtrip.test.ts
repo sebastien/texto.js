@@ -1,8 +1,8 @@
 // Integration tests for format preservation in pre blocks
 
 import { describe, test, expect } from "bun:test";
-import { TextoParser } from "../ts/texto/texto";
-import { formatTexto } from "../ts/texto/formatters/texto";
+import { TextoParser } from "../src/ts/texto/texto";
+import { formatTexto } from "../src/ts/texto/formatters/texto";
 
 describe("Pre block format preservation", () => {
 	test("fenced block preserves format as fenced", () => {
@@ -15,7 +15,7 @@ code here
 
 		// Find the pre element
 		const findPre = (node: any): any => {
-			if (node.tagName === "pre") return node;
+			if (node.name === "pre") return node;
 			if (node.children) {
 				for (const child of node.children) {
 					const found = findPre(child);
@@ -39,7 +39,7 @@ code here
 
 		// Find the pre element
 		const findPre = (node: any): any => {
-			if (node.tagName === "pre") return node;
+			if (node.name === "pre") return node;
 			if (node.children) {
 				for (const child of node.children) {
 					const found = findPre(child);

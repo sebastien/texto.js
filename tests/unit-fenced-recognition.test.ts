@@ -1,10 +1,10 @@
 // Unit tests for FencedBlockParser recognition
 
 import { describe, test, expect } from "bun:test";
-import { FencedBlockParser } from "../ts/texto/parsers/block/fenced";
-import { ParsingContext } from "../ts/texto/parsing/context";
-import { DocumentBuilder } from "../ts/texto/document/builder";
-import { Cursor } from "../ts/texto/utils/cursor";
+import { FencedBlockParser } from "../src/ts/texto/parsers/block/fenced";
+import { ParsingContext } from "../src/ts/texto/parsing/context";
+import { DocumentBuilder } from "../src/ts/texto/document/builder";
+import { Cursor } from "../src/ts/texto/utils/cursor";
 
 describe("FencedBlockParser recognition", () => {
 	const createContext = (text: string): ParsingContext => {

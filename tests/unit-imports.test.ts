@@ -6,7 +6,7 @@ import {
 	DocumentBuilder,
 	Cursor,
 	createElement,
-} from "../ts/texto/index";
+} from "../src/ts/texto/index";
 
 describe("Imports", () => {
 	test("TextoParser can be instantiated", () => {
@@ -29,7 +29,7 @@ describe("Imports", () => {
 	test("createElement works", () => {
 		const el = createElement("div", { class: "test" });
 		expect(el.type).toBe("element");
-		expect(el.tagName).toBe("div");
+		expect(el.name).toBe("div");
 		expect(el.attributes.get("class")).toBe("test");
 	});
 });

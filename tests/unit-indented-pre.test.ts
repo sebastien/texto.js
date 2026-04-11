@@ -1,10 +1,10 @@
 // Unit tests for IndentedPreBlockParser
 
 import { describe, test, expect } from "bun:test";
-import { IndentedPreBlockParser } from "../ts/texto/parsers/block/indented-pre";
-import { ParsingContext } from "../ts/texto/parsing/context";
-import { DocumentBuilder } from "../ts/texto/document/builder";
-import { Cursor } from "../ts/texto/utils/cursor";
+import { IndentedPreBlockParser } from "../src/ts/texto/parsers/block/indented-pre";
+import { ParsingContext } from "../src/ts/texto/parsing/context";
+import { DocumentBuilder } from "../src/ts/texto/document/builder";
+import { Cursor } from "../src/ts/texto/utils/cursor";
 
 describe("IndentedPreBlockParser recognition", () => {
 	const createContext = (text: string): ParsingContext => {
@@ -121,7 +121,7 @@ describe("IndentedPreBlockParser parsing", () => {
 		const result = parser.process(cursor, context, info!);
 
 		expect(result.node).not.toBeUndefined();
-		expect(result.node!.tagName).toBe("pre");
+		expect(result.node!.name).toBe("pre");
 		expect(result.node!.attributes.get("_format")).toBe("indented");
 		expect(result.node!.children[0].content).toBe("line1");
 	});
