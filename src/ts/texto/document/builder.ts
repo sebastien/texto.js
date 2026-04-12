@@ -36,7 +36,9 @@ export class DocumentBuilder {
 			appendices,
 		};
 
-		this.stack = [root];
+		// Stack includes document root and content node
+		// This ensures push/pop during parsing returns to content, not document
+		this.stack = [root, content];
 		this.sections = [];
 		this.current = content;
 	}

@@ -130,6 +130,9 @@ export class BlockParsingEngine {
 		if (recognised.info.type === "tagged") {
 			// For tagged blocks, find the actual closing line
 			blockEnd = this.findTaggedBlockEnd(text, startOffset);
+		} else if (recognised.info.type === "blockquote") {
+			// For blockquotes, look ahead to find the actual end including continuation lines
+			blockEnd = this.findBlockquoteEnd(text, startOffset);
 		} else {
 			// For other blocks, use the default boundary detection (blank lines)
 			blockEnd = this.findBlockEnd(text, startOffset);
@@ -291,9 +294,21 @@ export class BlockParsingEngine {
 				i++;
 			}
 
-			// Check for newline
-			if (i < fragment.length && fragment[i] === "\n") {
-				context.advanceOffset(i + 1);
+			// Check for line ending (blank line)
+			if (
+				i < fragment.length &&
+				(fragment[i] === "\n" || fragment[i] === "\r")
+			) {
+				// Handle CRLF
+				if (
+					fragment[i] === "\r" &&
+					i + 1 < fragment.length &&
+					fragment[i + 1] === "\n"
+				) {
+					context.advanceOffset(i + 2);
+				} else {
+					context.advanceOffset(i + 1);
+				}
 				continue;
 			}
 
@@ -325,6 +340,83 @@ export class BlockParsingEngine {
 			}
 
 			pos = newline2;
+		}
+
+		return text.length;
+	}
+
+	// Find the end of a blockquote, including lines separated by blank lines
+	findBlockquoteEnd(text: string, startOffset: number): number {
+		let pos = startOffset;
+
+		while (pos < text.length) {
+			// Find the next newline
+			const newline = text.indexOf("\n", pos);
+			if (newline === -1) {
+				// End of text
+				return text.length;
+			}
+
+			// Check if the line after this newline starts with >
+			const nextLineStart = newline + 1;
+			if (nextLineStart >= text.length) {
+				return text.length;
+			}
+
+			// Skip whitespace at start of next line
+			let checkPos = nextLineStart;
+			while (
+				checkPos < text.length &&
+				(text[checkPos] === " " || text[checkPos] === "\t")
+			) {
+				checkPos++;
+			}
+
+			// If next non-whitespace char is >, this is a continuation
+			if (checkPos < text.length && text[checkPos] === ">") {
+				// Continue scanning from the continuation line
+				pos = nextLineStart;
+				continue;
+			}
+
+			// Check if this is a blank line (could be paragraph separator within blockquote)
+			// Look ahead to see if there's a blockquote line after the blank line
+			if (checkPos < text.length && text[checkPos] !== "\n") {
+				// Next line has content but doesn't start with >
+				// This is where the blockquote ends
+				return newline;
+			}
+
+			// Next line is blank or end of text
+			// Look for next non-blank line
+			let searchPos = nextLineStart;
+			while (searchPos < text.length) {
+				const nextNewline = text.indexOf("\n", searchPos);
+				const line =
+					nextNewline === -1
+						? text.slice(searchPos)
+						: text.slice(searchPos, nextNewline);
+
+				const trimmed = line.trimStart();
+				if (trimmed.startsWith(">")) {
+					// Found continuation after blank line, continue scanning
+					pos = searchPos;
+					break;
+				}
+				if (trimmed !== "") {
+					// Found non-blank, non-blockquote line - blockquote ends here
+					return newline;
+				}
+				// Skip blank line
+				if (nextNewline === -1) {
+					return text.length;
+				}
+				searchPos = nextNewline + 1;
+			}
+
+			if (searchPos >= text.length) {
+				return text.length;
+			}
 		}
 
 		return text.length;

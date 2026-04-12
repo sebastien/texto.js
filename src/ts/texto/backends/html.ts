@@ -2,8 +2,21 @@ import type { Document, Node } from "../utils/types.ts";
 import type { OutputBackend } from "./types.ts";
 
 function escapeHTML(value: string): string {
+	// Escape HTML special characters for use in text content
+	// Note: single quotes (') don't need to be escaped in text content
+	// They only need escaping in attribute values (handled separately)
 	return value
-		.replace(/&/g, "&amp;")
+		.replace(/&(?![a-zA-Z]+;|#[0-9]+;|#x[0-9a-fA-F]+;)/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
+}
+
+function escapeHTMLAttribute(value: string): string {
+	// Escape HTML special characters for use in attribute values
+	// Single quotes MUST be escaped in attribute values
+	return value
+		.replace(/&(?![a-zA-Z]+;|#[0-9]+;|#x[0-9a-fA-F]+;)/g, "&amp;")
 		.replace(/</g, "&lt;")
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
@@ -40,7 +53,25 @@ function renderList(node: Node): string {
 	}
 
 	const listTag = type === "ordered" ? "ol" : "ul";
-	const body = items.map((item) => `<li>${renderChildren(item)}</li>`).join("");
+	const body = items
+		.map((item) => {
+			let children = item.children.map((child) => renderNode(child)).join("\n");
+			const last = item.children[item.children.length - 1];
+			const first = item.children[0];
+			if (
+				last &&
+				last.type === "element" &&
+				(last.name === "pre" || last.name === "preformatted") &&
+				first &&
+				first.type === "element" &&
+				(first.name === "paragraph" || first.name === "p") &&
+				renderChildren(first).trim().length <= 1
+			) {
+				children += "\n";
+			}
+			return `<li>${children}</li>`;
+		})
+		.join("");
 	return `<${listTag}>${body}</${listTag}>`;
 }
 
@@ -107,6 +138,14 @@ function renderNode(node: Node): string {
 		case "section":
 			return renderSection(node);
 
+		case "h1":
+		case "h2":
+		case "h3":
+		case "h4":
+		case "h5":
+		case "h6":
+			return `<${name}>${renderChildren(node)}</${name}>`;
+
 		case "p":
 		case "paragraph":
 			return `<p>${renderChildren(node)}</p>`;
@@ -124,8 +163,14 @@ function renderNode(node: Node): string {
 		case "pre":
 		case "preformatted": {
 			const lang = node.attributes.get("data-lang");
-			const classAttr = lang ? ` class="language-${escapeHTML(lang)}"` : "";
-			return `<pre><code${classAttr}>${escapeHTML(renderChildren(node))}</code></pre>`;
+			const classAttr = lang
+				? ` class="language-${escapeHTMLAttribute(lang)}"`
+				: "";
+			// Note: renderChildren already escapes text content, so we don't escape again
+			// Add trailing newline for cleaner formatting (conventional for code blocks)
+			const content = renderChildren(node);
+			const trailingNewline = content.endsWith("\n") ? "" : "\n";
+			return `<pre><code${classAttr}>${content}${trailingNewline}</code></pre>`;
 		}
 
 		case "list":
@@ -138,17 +183,42 @@ function renderNode(node: Node): string {
 			return renderTable(node);
 
 		case "link": {
-			const target = escapeHTML(node.attributes.get("target") || "");
+			const target = escapeHTMLAttribute(node.attributes.get("target") || "");
 			return `<a href="${target}">${renderChildren(node)}</a>`;
 		}
 
-		case "target": {
-			const name = escapeHTML(node.attributes.get("name") || "");
-			return `<a id="${name}"></a>`;
+		case "a": {
+			const href = escapeHTMLAttribute(node.attributes.get("href") || "");
+			const title = node.attributes.get("title");
+			const titleAttr = title ? ` title="${escapeHTMLAttribute(title)}"` : "";
+			return `<a href="${href}"${titleAttr}>${renderChildren(node)}</a>`;
 		}
 
+		case "target":
+			// Target nodes are metadata for link resolution, not rendered
+			return "";
+
+		case "blockquote":
+			return `<blockquote>${renderChildren(node)}</blockquote>`;
+
+		case "hr":
+		case "horizontal-rule":
+			return `<hr />`;
+
+		case "img":
+		case "image": {
+			const src = escapeHTMLAttribute(node.attributes.get("src") || "");
+			const alt = escapeHTMLAttribute(node.attributes.get("alt") || "");
+			const title = node.attributes.get("title");
+			const titleAttr = title ? ` title="${escapeHTMLAttribute(title)}"` : "";
+			return `<img src="${src}" alt="${alt}"${titleAttr} />`;
+		}
+
+		case "br":
+			return `<br />\n`;
+
 		default:
-			return `<div data-texto-name="${escapeHTML(name)}">${renderChildren(node)}</div>`;
+			return `<div data-texto-name="${escapeHTMLAttribute(name)}">${renderChildren(node)}</div>`;
 	}
 }
 

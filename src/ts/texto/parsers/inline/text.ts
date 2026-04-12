@@ -29,14 +29,13 @@ export class TextParser extends BaseInlineParser {
 		// Get current position from cursor for accurate line/column
 		const currentPos = cursor.getPosition();
 
-		// Add as text node with position
-		const textNode = context.builder.addText(match.content, {
+		// Add as text node with position (addText already appends to current node)
+		context.builder.addText(match.content, {
 			start: match.start,
 			end: match.end,
 			line: currentPos.line,
 			column: currentPos.column,
 		});
-		context.builder.getCurrentNode().children.push(textNode);
 
 		return match.end;
 	}

@@ -4,7 +4,7 @@ import { createText } from "../../document/node.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { BLOCK_PRIORITIES } from "../../parsing/priority.ts";
 import type { Cursor } from "../../utils/cursor.ts";
-import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
+import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
 export class ParagraphParser extends BaseBlockParser {
@@ -57,11 +57,9 @@ export class ParagraphParser extends BaseBlockParser {
 			const _lineStartColumn = cursor.columnNumber;
 			const line = cursor.readLine();
 
-			// Move cursor past this line (the newline)
+			// readLine() now consumes line endings (\n, \r, or \r\n)
+			// so we don't need to advance past them manually
 			const lineEndOffset = cursor.pos;
-			if (!cursor.isAtEnd()) {
-				cursor.advance(); // consume the newline
-			}
 
 			// Skip empty lines at the start
 			if (lines.length === 0 && line.trim() === "") {
@@ -71,6 +69,17 @@ export class ParagraphParser extends BaseBlockParser {
 			// Check if this line is blank (ends the paragraph)
 			if (line.trim() === "") {
 				// Restore cursor to before the blank line
+				cursor.pos = lineStartOffset;
+				break;
+			}
+
+			// Check if this line is an indented code block (4+ spaces)
+			// If so, end the paragraph before this line so the code block can be parsed separately
+			// Note: We check even for the first line after a blank line (when lines.length === 0)
+			// because the blank line was just skipped
+			const lineIndent = this.getLineIndent(text, lineStartOffset);
+			if (lineIndent >= 4) {
+				// This line is an indented code block - end paragraph before it
 				cursor.pos = lineStartOffset;
 				break;
 			}
@@ -111,6 +120,12 @@ export class ParagraphParser extends BaseBlockParser {
 				if (listMarkerMatch && nextLineIndent <= firstLineIndent + 2) {
 					break;
 				}
+
+				// If next line is an indented code block (4+ spaces), end paragraph
+				// This allows code blocks to be parsed separately
+				if (nextLineIndent >= 4) {
+					break;
+				}
 			}
 
 			// Check if we've reached end of block
@@ -120,6 +135,14 @@ export class ParagraphParser extends BaseBlockParser {
 		}
 
 		const end = cursor.pos;
+
+		// Skip creating empty paragraphs
+		if (lines.length === 0) {
+			return {
+				consumed: end - start,
+				node: null as any, // Return null node for empty paragraphs
+			};
+		}
 
 		// Create paragraph node with position
 		const node = context.builder.createAndAppend(
@@ -133,29 +156,70 @@ export class ParagraphParser extends BaseBlockParser {
 			},
 		);
 
-		if (lines.length > 0) {
+		if (context.parser) {
 			// Find the actual content start position (skip leading whitespace on first line)
 			const firstLine = lines[0];
 			const firstLineTrimmed = firstLine.trimStart();
 			const leadingSpaces = firstLine.length - firstLineTrimmed.length;
 			const contentStartOffset = linePositions[0].start + leadingSpaces;
-			const contentStartLine = linePositions[0].lineStart;
-			const contentStartColumn = leadingSpaces;
 
-			// Join lines with spaces and normalize for the text content
-			let content = lines.join(" ").trim();
-			content = content.replace(/[ \t]+/g, " ");
+			// Process lines, detecting hard line breaks (lines ending with 2+ spaces)
+			// and joining them appropriately
+			let content = "";
+			let hasHardBreaks = false;
+
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i];
+				if (i > 0) {
+					// Check if previous line ended with 2+ spaces (hard line break)
+					const prevLine = lines[i - 1];
+					if (/  \s*$/.test(prevLine)) {
+						// Hard line break - insert special marker
+						content += "\n"; // Use newline as marker for hard break
+						hasHardBreaks = true;
+					} else {
+						// Soft break - join with space
+						content += " ";
+					}
+				}
+				// For all lines except the last, trim trailing whitespace
+				// For the last line, preserve trailing spaces as they may be significant
+				if (i < lines.length - 1) {
+					content += line.trim();
+				} else {
+					// Last line: trim leading spaces but preserve trailing spaces
+					const trimmed = line.trimStart();
+					content += trimmed;
+				}
+			}
+
+			// Only trim leading whitespace from the entire content
+			// Preserve trailing whitespace as it may be intentional
+			content = content.trimStart();
+			// Collapse multiple internal spaces/tabs to single spaces, but preserve trailing
+			const trailingMatch = content.match(/[ \t]+$/);
+			const trailingSpaces = trailingMatch ? trailingMatch[0] : "";
+			content = content.replace(/[ \t]+/g, " ") + trailingSpaces;
 
 			if (content) {
-				// Calculate end position based on content length
-				const contentEndOffset = contentStartOffset + content.length;
-				const textNode = createText(content, {
-					start: contentStartOffset,
-					end: contentEndOffset,
-					line: contentStartLine,
-					column: contentStartColumn,
-				});
-				node.children.push(textNode);
+				// Set paragraph as current node for inline parsing
+				context.builder.pushNode(node);
+
+				// If we have hard breaks, parse line by line
+				if (hasHardBreaks) {
+					this.parseWithLineBreaks(content, node, context, contentStartOffset);
+				} else {
+					// Parse inline elements (emphasis, strong, etc.)
+					context.parser.parseInlines(
+						content,
+						node,
+						context,
+						contentStartOffset,
+					);
+				}
+
+				// Restore previous current node
+				context.builder.popNode();
 			}
 		}
 
@@ -163,6 +227,45 @@ export class ParagraphParser extends BaseBlockParser {
 			consumed: end - start,
 			node,
 		};
+	}
+
+	/**
+	 * Parse paragraph content that contains hard line breaks.
+	 * The content has newlines as markers for hard breaks.
+	 */
+	private parseWithLineBreaks(
+		content: string,
+		node: Node,
+		context: ParsingContext,
+		baseOffset: number,
+	): void {
+		const lines = content.split("\n");
+		let currentOffset = baseOffset;
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i].trim();
+			if (line) {
+				// Parse inline content for this line
+				context.parser?.parseInlines(line, node, context, currentOffset);
+			}
+
+			// Add line break after each line except the last
+			if (i < lines.length - 1) {
+				context.builder.createAndAppend(
+					"br",
+					{},
+					{
+						start: currentOffset,
+						end: currentOffset,
+						line: 0,
+						column: 0,
+					},
+				);
+			}
+
+			// Update offset for next line
+			currentOffset += line.length + 1; // +1 for the newline
+		}
 	}
 
 	private getLineIndent(text: string, offset: number): number {
@@ -177,8 +280,8 @@ export class ParagraphParser extends BaseBlockParser {
 			} else if (char === "\t") {
 				indent += 4;
 				pos++;
-			} else if (char === "\n") {
-				// Empty line
+			} else if (char === "\n" || char === "\r") {
+				// Empty line (any line ending type)
 				break;
 			} else {
 				break;
@@ -189,10 +292,22 @@ export class ParagraphParser extends BaseBlockParser {
 	}
 
 	private readLineFromText(text: string, offset: number): string {
-		const end = text.indexOf("\n", offset);
-		if (end === -1) {
+		// Find the next line ending: \n (LF), \r\n (CRLF), or \r (CR)
+		const lfPos = text.indexOf("\n", offset);
+		const crPos = text.indexOf("\r", offset);
+
+		let end: number;
+		if (lfPos === -1 && crPos === -1) {
+			// No line ending found
 			return text.slice(offset);
+		} else if (crPos === -1 || (lfPos !== -1 && lfPos < crPos)) {
+			// LF comes first (or no CR)
+			end = lfPos;
+		} else {
+			// CR comes first (or no LF)
+			end = crPos;
 		}
+
 		return text.slice(offset, end);
 	}
 }

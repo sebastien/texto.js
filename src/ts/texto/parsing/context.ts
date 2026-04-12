@@ -2,6 +2,7 @@
 // Enhanced with offset management for recursive block parsing
 
 import type { DocumentBuilder, SectionEntry } from "../document/builder.ts";
+import type { TextoParser } from "../texto.ts";
 import { Cursor } from "../utils/cursor.ts";
 import { expandTabs, getIndent, removeLeadingSpaces } from "../utils/indent.ts";
 import type { Node, ParseError } from "../utils/types.ts";
@@ -27,6 +28,7 @@ export interface OffsetState {
 
 export class ParsingContext {
 	builder: DocumentBuilder;
+	parser: TextoParser | null = null;
 	links: LinkEntry[] = [];
 	targets: TargetEntry[] = [];
 	errors: ParseError[] = [];
@@ -51,6 +53,11 @@ export class ParsingContext {
 		if (text !== undefined) {
 			this.text = text;
 		}
+	}
+
+	// NEW: Set parser reference for inline parsing
+	setParser(parser: TextoParser): void {
+		this.parser = parser;
 	}
 
 	// NEW: Initialize with text

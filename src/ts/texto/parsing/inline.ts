@@ -24,55 +24,58 @@ export class InlineParsingEngine {
 
 		while (cursor.pos < endOffset) {
 			// Find the next inline match across all parsers
-			const match = this.findNextMatch(cursor, context, ordered, endOffset);
+			const matchInfo = this.findNextMatch(cursor, context, ordered, endOffset);
 
-			if (!match) {
+			if (!matchInfo) {
 				// No more inlines, add remaining text
 				const remainingText = cursor.slice(cursor.pos, endOffset);
 				if (remainingText) {
 					const absStart = baseOffset + cursor.pos;
 					const absEnd = baseOffset + endOffset;
 					const currentPos = cursor.getPosition();
-					const textNode = context.builder.addText(remainingText, {
+					context.builder.addText(remainingText, {
 						start: absStart,
 						end: absEnd,
 						line: currentPos.line,
 						column: currentPos.column,
 					});
-					parent.children.push(textNode);
 				}
 				break;
 			}
 
-			// Add text before the match
-			if (match.match.start > cursor.pos) {
-				const beforeText = cursor.slice(cursor.pos, match.match.start);
+			const { parser, match, isAtCurrentPos } = matchInfo;
+
+			if (isAtCurrentPos) {
+				// Match is at current position - parse it directly
+				// Adjust match positions to be absolute
+				const adjustedMatch: InlineMatch = {
+					...match,
+					start: baseOffset + match.start,
+					end: baseOffset + match.end,
+				};
+
+				// Parse the inline
+				const newOffset = parser.parse(cursor, context, adjustedMatch);
+
+				// Update cursor position (relative to the local text)
+				cursor.pos = newOffset - baseOffset;
+			} else {
+				// Match is at a future position - add text up to the match first
+				const beforeText = cursor.slice(cursor.pos, match.start);
 				if (beforeText) {
 					const absStart = baseOffset + cursor.pos;
-					const absEnd = baseOffset + match.match.start;
+					const absEnd = baseOffset + match.start;
 					const currentPos = cursor.getPosition();
-					const textNode = context.builder.addText(beforeText, {
+					context.builder.addText(beforeText, {
 						start: absStart,
 						end: absEnd,
 						line: currentPos.line,
 						column: currentPos.column,
 					});
-					parent.children.push(textNode);
 				}
+				// Move cursor to the match position for next iteration
+				cursor.pos = match.start;
 			}
-
-			// Adjust match positions to be absolute
-			const adjustedMatch: InlineMatch = {
-				...match.match,
-				start: baseOffset + match.match.start,
-				end: baseOffset + match.match.end,
-			};
-
-			// Parse the inline
-			const newOffset = match.parser.parse(cursor, context, adjustedMatch);
-
-			// Update cursor position (relative to the local text)
-			cursor.pos = newOffset - baseOffset;
 		}
 	}
 
@@ -81,18 +84,47 @@ export class InlineParsingEngine {
 		context: ParsingContext,
 		parsers: InlineParser[],
 		blockEnd: number,
-	): { parser: InlineParser; match: InlineMatch } | null {
-		let bestMatch: { parser: InlineParser; match: InlineMatch } | null = null;
-		let bestPosition = Infinity;
+	): {
+		parser: InlineParser;
+		match: InlineMatch;
+		isAtCurrentPos: boolean;
+	} | null {
+		// Separate parsers into two groups:
+		// 1. Real inline parsers (code, links, emphasis) - these create special elements
+		// 2. Fallback text parser - just consumes remaining text
+
+		const realParsers: typeof parsers = [];
+		let fallbackParser: InlineParser | null = null;
 
 		for (const parser of parsers) {
+			if (parser.name === "text") {
+				fallbackParser = parser;
+			} else {
+				realParsers.push(parser);
+			}
+		}
+
+		// Find best match from real parsers (at or after current position)
+		let bestMatch: { parser: InlineParser; match: InlineMatch } | null = null;
+		let bestPosition = Infinity;
+		let bestPriority = Infinity;
+
+		for (const parser of realParsers) {
 			const save = cursor.clone();
 
 			const match = parser.findNext(cursor, context);
 
-			if (match && match.start < bestPosition && match.start < blockEnd) {
-				bestPosition = match.start;
-				bestMatch = { parser, match };
+			if (match && match.start >= cursor.pos && match.start < blockEnd) {
+				// Prefer match with smaller start position
+				// If same position, prefer higher priority (lower priority number)
+				if (
+					match.start < bestPosition ||
+					(match.start === bestPosition && parser.priority < bestPriority)
+				) {
+					bestPosition = match.start;
+					bestPriority = parser.priority;
+					bestMatch = { parser, match };
+				}
 			}
 
 			// Restore cursor position for next parser
@@ -101,7 +133,26 @@ export class InlineParsingEngine {
 			cursor.columnNumber = save.columnNumber;
 		}
 
-		return bestMatch;
+		// If we found a real parser match, return it
+		if (bestMatch) {
+			const isAtCurrentPos = bestMatch.match.start === cursor.pos;
+			return { ...bestMatch, isAtCurrentPos };
+		}
+
+		// No real parser matches - use fallback text parser
+		if (fallbackParser) {
+			const save = cursor.clone();
+			const match = fallbackParser.findNext(cursor, context);
+			cursor.pos = save.pos;
+			cursor.lineNumber = save.lineNumber;
+			cursor.columnNumber = save.columnNumber;
+
+			if (match && match.start >= cursor.pos && match.start < blockEnd) {
+				return { parser: fallbackParser, match, isAtCurrentPos: true };
+			}
+		}
+
+		return null;
 	}
 
 	normaliseWhitespace(text: string): string {

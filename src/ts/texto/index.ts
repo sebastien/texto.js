@@ -44,6 +44,27 @@ export {
 	toJSON,
 } from "./formatters/json.ts";
 export { formatTexto } from "./formatters/texto.ts";
+// Profiles
+export { createTextoParser } from "./profiles/texto.ts";
+export {
+	createMarkdownParser,
+	type MarkdownProfileOptions,
+} from "./profiles/markdown.ts";
+export { MarkdownParser } from "./parsers/markdown-parser.ts";
+
+// Phases (multi-phase parsing system)
+export {
+	PhaseRegistry,
+	ReferenceCollectionPhase,
+	isInlinePhase,
+	isPostParsePhase,
+	isPreParsePhase,
+	type InlinePhase,
+	type ParsingPhase,
+	type PhaseResult,
+	type PostParsePhase,
+	type PreParsePhase,
+} from "./parsing/phases/index.ts";
 // Block parsers
 export {
 	BaseBlockParser,
@@ -54,6 +75,11 @@ export { IndentedPreBlockParser } from "./parsers/block/indented-pre.ts";
 export { ListParser } from "./parsers/block/list.ts";
 export { ParagraphParser } from "./parsers/block/paragraph.ts";
 export { SectionParser } from "./parsers/block/section.ts";
+export { HeaderParser } from "./parsers/block/header.ts";
+export { BlockquoteParser } from "./parsers/block/blockquote.ts";
+export { IndentedCodeParser } from "./parsers/block/indented-code.ts";
+export { HorizontalRuleParser } from "./parsers/block/horizontal-rule.ts";
+export { ReferenceDefinitionParser } from "./parsers/block/reference-definition.ts";
 // Inline parsers
 export {
 	BaseInlineParser,
@@ -61,6 +87,10 @@ export {
 } from "./parsers/inline/base.ts";
 export { EmphasisParser } from "./parsers/inline/emphasis.ts";
 export { TextParser } from "./parsers/inline/text.ts";
+export { CodeParser } from "./parsers/inline/code.ts";
+export { LinkParser } from "./parsers/inline/link.ts";
+export { ImageParser } from "./parsers/inline/image.ts";
+export { EscapeParser } from "./parsers/inline/escape.ts";
 export { BlockParsingEngine } from "./parsing/block.ts";
 export {
 	type LinkEntry,
@@ -68,6 +98,11 @@ export {
 	type TargetEntry,
 } from "./parsing/context.ts";
 export { InlineParsingEngine } from "./parsing/inline.ts";
+export {
+	applyAstPatches,
+	IncrementalParser,
+	init as initIncrementalParser,
+} from "./parsing/incremental.ts";
 export {
 	BLOCK_PRIORITIES,
 	HIGH,
@@ -114,11 +149,14 @@ export type {
 	Document,
 	InlineMatch,
 	Node,
+	NodePath,
 	ParseError,
 	ParserState,
 	Position,
 	Priority,
 	RecognitionInfo,
+	AstPatch,
+	TextEdit,
 } from "./utils/types.ts";
 // Constants
 export { TAB_SIZE } from "./utils/types.ts";

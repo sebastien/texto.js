@@ -15,6 +15,13 @@ export class Cursor {
 		this._column = 0;
 	}
 
+	/**
+	 * Get the full text buffer
+	 */
+	get text(): string {
+		return this.buffer;
+	}
+
 	get length(): number {
 		return this.buffer.length;
 	}
@@ -150,7 +157,18 @@ export class Cursor {
 	}
 
 	readLine(): string {
-		return this.readUntil((char) => char === "\n");
+		const line = this.readUntil((char) => char === "\n" || char === "\r");
+		// Handle line endings: \n (LF), \r\n (CRLF), or \r (CR)
+		if (this.current() === "\r") {
+			this.advance(); // consume \r
+			// If \r is followed by \n (CRLF), consume the \n too
+			if (this.current() === "\n") {
+				this.advance();
+			}
+		} else if (this.current() === "\n") {
+			this.advance(); // consume \n (LF)
+		}
+		return line;
 	}
 
 	slice(start: number, end: number): string {

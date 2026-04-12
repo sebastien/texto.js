@@ -2,12 +2,43 @@
 
 import { readFileSync } from "node:fs";
 import { renderBackend } from "../backends/index.ts";
+import { createMarkdownParser } from "../profiles/markdown.ts";
+import { createTextoParser } from "../profiles/texto.ts";
 import { TextoParser } from "../texto.ts";
 
 export interface ParseOptions {
 	file?: string;
+	profile?: "texto" | "markdown" | "md" | "auto";
+	format?: "json" | "xml" | "html" | string;
 	includePositions?: boolean;
-	format?: string;
+}
+
+/**
+ * Detect profile from file extension
+ */
+function detectProfileFromFile(filePath: string): "texto" | "markdown" {
+	if (filePath.endsWith(".md") || filePath.endsWith(".markdown")) {
+		return "markdown";
+	}
+	if (filePath.endsWith(".txto")) {
+		return "texto";
+	}
+	// Default to texto for unknown extensions
+	return "texto";
+}
+
+/**
+ * Create parser based on profile
+ */
+function createParser(profile: "texto" | "markdown"): TextoParser {
+	switch (profile) {
+		case "markdown":
+		case "md":
+			return createMarkdownParser();
+		case "texto":
+		default:
+			return createTextoParser();
+	}
 }
 
 export async function parseCommand(options: ParseOptions): Promise<string> {
@@ -29,8 +60,20 @@ export async function parseCommand(options: ParseOptions): Promise<string> {
 		input = Buffer.concat(chunks).toString("utf8");
 	}
 
+	// Determine profile
+	let profile: "texto" | "markdown";
+	if (options.profile && options.profile !== "auto") {
+		profile = options.profile === "md" ? "markdown" : options.profile;
+	} else if (options.file) {
+		profile = detectProfileFromFile(options.file);
+	} else {
+		profile = "texto"; // Default for stdin
+	}
+
+	// Create appropriate parser
+	const parser = createParser(profile);
+
 	// Parse the document
-	const parser = new TextoParser();
 	const doc = parser.parse(input);
 
 	// Render with output backend

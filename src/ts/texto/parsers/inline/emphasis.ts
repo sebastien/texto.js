@@ -1,5 +1,7 @@
 // Emphasis and strong inline parser
+// Supports both *asterisk* and _underscore_ style emphasis
 
+import { createText } from "../../document/node.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { INLINE_PRIORITIES } from "../../parsing/priority.ts";
 import type { Cursor } from "../../utils/cursor.ts";
@@ -12,31 +14,99 @@ export class EmphasisParser extends BaseInlineParser {
 	}
 
 	findNext(cursor: Cursor, _context: ParsingContext): InlineMatch | null {
-		const text = cursor.slice(cursor.pos, cursor.length);
+		const text = cursor.text;
+		const textLength = text.length;
+		let pos = cursor.pos;
 
-		// Look for **strong**
-		const strongMatch = this.findDelimiter(text, "**");
-		if (strongMatch) {
-			return {
-				start: cursor.pos + strongMatch.start,
-				end: cursor.pos + strongMatch.end,
-				content: strongMatch.content,
-				style: "strong",
-			};
+		// Find the next emphasis marker (* or _) with the smallest start position
+		let bestMatch: InlineMatch | null = null;
+		let bestStart = Infinity;
+
+		// Check for **strong** or __strong__
+		let strongAsterisk = text.indexOf("**", pos);
+		let strongUnderscore = text.indexOf("__", pos);
+
+		// Check for *emphasis* or _emphasis_
+		let emAsterisk = text.indexOf("*", pos);
+		let emUnderscore = text.indexOf("_", pos);
+
+		// Find **strong** (check if there's a closing **)
+		if (strongAsterisk !== -1) {
+			const closeIdx = text.indexOf("**", strongAsterisk + 2);
+			if (closeIdx !== -1 && closeIdx < bestStart) {
+				bestStart = strongAsterisk;
+				bestMatch = {
+					start: strongAsterisk,
+					end: closeIdx + 2,
+					content: text.slice(strongAsterisk + 2, closeIdx),
+					style: "strong",
+					delimiter: "**",
+				};
+			}
 		}
 
-		// Look for *emphasis*
-		const emMatch = this.findDelimiter(text, "*");
-		if (emMatch) {
-			return {
-				start: cursor.pos + emMatch.start,
-				end: cursor.pos + emMatch.end,
-				content: emMatch.content,
-				style: "emphasis",
-			};
+		// Find __strong__
+		if (strongUnderscore !== -1) {
+			const closeIdx = text.indexOf("__", strongUnderscore + 2);
+			if (closeIdx !== -1 && strongUnderscore < bestStart) {
+				bestStart = strongUnderscore;
+				bestMatch = {
+					start: strongUnderscore,
+					end: closeIdx + 2,
+					content: text.slice(strongUnderscore + 2, closeIdx),
+					style: "strong",
+					delimiter: "__",
+				};
+			}
 		}
 
-		return null;
+		// Find *emphasis* (but not ** which is strong)
+		if (emAsterisk !== -1 && emAsterisk !== strongAsterisk) {
+			// Make sure it's not part of **
+			if (text[emAsterisk + 1] !== "*") {
+				const closeIdx = text.indexOf("*", emAsterisk + 1);
+				// Make sure closing is not part of **
+				if (
+					closeIdx !== -1 &&
+					text[closeIdx + 1] !== "*" &&
+					emAsterisk < bestStart
+				) {
+					bestStart = emAsterisk;
+					bestMatch = {
+						start: emAsterisk,
+						end: closeIdx + 1,
+						content: text.slice(emAsterisk + 1, closeIdx),
+						style: "emphasis",
+						delimiter: "*",
+					};
+				}
+			}
+		}
+
+		// Find _emphasis_ (but not __ which is strong)
+		if (emUnderscore !== -1 && emUnderscore !== strongUnderscore) {
+			// Make sure it's not part of __
+			if (text[emUnderscore + 1] !== "_") {
+				const closeIdx = text.indexOf("_", emUnderscore + 1);
+				// Make sure closing is not part of __
+				if (
+					closeIdx !== -1 &&
+					text[closeIdx + 1] !== "_" &&
+					emUnderscore < bestStart
+				) {
+					bestStart = emUnderscore;
+					bestMatch = {
+						start: emUnderscore,
+						end: closeIdx + 1,
+						content: text.slice(emUnderscore + 1, closeIdx),
+						style: "emphasis",
+						delimiter: "_",
+					};
+				}
+			}
+		}
+
+		return bestMatch;
 	}
 
 	parse(cursor: Cursor, context: ParsingContext, match: InlineMatch): number {
@@ -60,7 +130,7 @@ export class EmphasisParser extends BaseInlineParser {
 		const delimiterLen = match.style === "strong" ? 2 : 1;
 		const contentStart = match.start + delimiterLen;
 		const contentEnd = match.end - delimiterLen;
-		const textNode = context.builder.addText(match.content, {
+		const textNode = createText(match.content, {
 			start: contentStart,
 			end: contentEnd,
 			line: startPos.line,
@@ -69,24 +139,5 @@ export class EmphasisParser extends BaseInlineParser {
 		node.children.push(textNode);
 
 		return match.end;
-	}
-
-	private findDelimiter(
-		text: string,
-		delimiter: string,
-	): { start: number; end: number; content: string } | null {
-		const start = text.indexOf(delimiter);
-		if (start === -1) return null;
-
-		const contentStart = start + delimiter.length;
-		const end = text.indexOf(delimiter, contentStart);
-
-		if (end === -1) return null;
-
-		return {
-			start,
-			end: end + delimiter.length,
-			content: text.slice(contentStart, end),
-		};
 	}
 }

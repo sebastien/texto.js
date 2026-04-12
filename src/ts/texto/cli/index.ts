@@ -35,7 +35,7 @@ function parseFlags(args: string[]): {
 			} else {
 				const name = arg.slice(2);
 				if (
-					name === "type" &&
+					(name === "type" || name === "profile") &&
 					i + 1 < args.length &&
 					!args[i + 1].startsWith("-")
 				) {
@@ -47,16 +47,32 @@ function parseFlags(args: string[]): {
 				}
 			}
 		} else if (arg.startsWith("-") && arg.length > 1) {
-			// Short flag(s), with support for value flags like -txml
+			// Short flag(s), with support for value flags like -txml or -pmarkdown
 			const flagStr = arg.slice(1);
-			if (flagStr.length > 1 && flagStr[0] === "t") {
-				flags.set("t", flagStr.slice(1));
+			if (flagStr.length > 1) {
+				// Check if it's -t<value> or -p<value>
+				if (flagStr[0] === "t") {
+					flags.set("type", flagStr.slice(1));
+				} else if (flagStr[0] === "p") {
+					flags.set("profile", flagStr.slice(1));
+				} else {
+					for (const char of flagStr) {
+						flags.set(char, true);
+					}
+				}
 			} else if (
 				flagStr === "t" &&
 				i + 1 < args.length &&
 				!args[i + 1].startsWith("-")
 			) {
 				flags.set("t", args[i + 1]);
+				i += 1;
+			} else if (
+				flagStr === "p" &&
+				i + 1 < args.length &&
+				!args[i + 1].startsWith("-")
+			) {
+				flags.set("profile", args[i + 1]);
 				i += 1;
 			} else {
 				for (const char of flagStr) {
@@ -125,28 +141,53 @@ async function handleParse(argsList: string[]): Promise<void> {
 	if (flags.has("help") || flags.has("h")) {
 		console.log("Usage: texto parse [options] [file]");
 		console.log("");
-		console.log("Parse texto document to an output backend");
+		console.log("Parse document to an output backend");
 		console.log("");
 		console.log("Options:");
-		console.log("  -h, --help       Show help");
-		console.log("  -p, --positions  Include source positions");
-		console.log("  -t, --type       Output backend (json, xml, html)");
+		console.log("  -h, --help              Show help");
+		console.log(
+			"  -p, --profile           Parser profile (texto, markdown, md, auto)",
+		);
+		console.log("  -t, --type              Output backend (json, xml, html)");
+		console.log("  --positions             Include source positions");
 		console.log("");
 		console.log("Arguments:");
-		console.log("  file             Input file (reads stdin if not provided)");
+		console.log(
+			"  file                    Input file (reads stdin if not provided)",
+		);
+		console.log("");
+		console.log("Examples:");
+		console.log(
+			"  texto parse doc.md              # Auto-detect markdown from .md",
+		);
+		console.log(
+			"  texto parse doc.txto            # Auto-detect texto from .txto",
+		);
+		console.log("  texto parse -p markdown file   # Force markdown profile");
+		console.log(
+			"  texto parse -p texto file.md   # Force texto profile on .md file",
+		);
+		console.log(
+			"  texto parse -thtml file.md     # Markdown profile, HTML output",
+		);
+		console.log("  echo '# Hi' | texto parse      # Stdin with texto profile");
 		process.exit(0);
 	}
 
 	const options: ParseOptions = {
 		file: positional[0],
-		includePositions: flags.has("positions") || flags.has("p"),
+		profile: (typeof flags.get("profile") === "string"
+			? (flags.get("profile") as "texto" | "markdown" | "md" | "auto")
+			: typeof flags.get("p") === "string"
+				? (flags.get("p") as "texto" | "markdown" | "md" | "auto")
+				: "auto") as "texto" | "markdown" | "md" | "auto",
+		includePositions: flags.has("positions"),
 		format:
 			(typeof flags.get("type") === "string"
 				? (flags.get("type") as string)
-				: undefined) ||
-			(typeof flags.get("t") === "string"
-				? (flags.get("t") as string)
-				: undefined),
+				: typeof flags.get("t") === "string"
+					? (flags.get("t") as string)
+					: undefined) || "json",
 	};
 
 	const output = await parseCommand(options);
@@ -162,10 +203,15 @@ async function handleFormat(argsList: string[]): Promise<void> {
 		console.log("Parse and re-format texto document");
 		console.log("");
 		console.log("Options:");
-		console.log("  -h, --help       Show help");
+		console.log("  -h, --help              Show help");
+		console.log(
+			"  -p, --profile           Parser profile (texto, markdown, auto)",
+		);
 		console.log("");
 		console.log("Arguments:");
-		console.log("  file             Input file (reads stdin if not provided)");
+		console.log(
+			"  file                    Input file (reads stdin if not provided)",
+		);
 		process.exit(0);
 	}
 
@@ -184,25 +230,40 @@ function printUsage(): void {
 	console.log("");
 	console.log("Usage:");
 	console.log(
-		"  texto parse [options] [file]    Parse texto to backend output",
+		"  texto parse [options] [file]    Parse document to backend output",
 	);
-	console.log("  texto format [options] [file]   Parse and re-format texto");
+	console.log("  texto format [options] [file]   Parse and re-format document");
 	console.log("  texto --help                    Show this help");
 	console.log("  texto --version                 Show version");
 	console.log("");
 	console.log("Options:");
 	console.log("  -h, --help                      Show help message");
-	console.log("  -p, --positions                 Include source positions");
 	console.log(
-		"  -t, --type                      Parse output type (json, xml, html)",
+		"  -p, --profile                   Parser profile (texto, markdown, auto)",
 	);
+	console.log(
+		"  -t, --type                      Output backend (json, xml, html)",
+	);
+	console.log("  --positions                     Include source positions");
+	console.log("");
+	console.log("Profile Selection:");
+	console.log("  Auto-detect from file extension:");
+	console.log("    .md, .markdown → markdown profile");
+	console.log("    .txto          → texto profile");
+	console.log("  Force with -p flag:");
+	console.log("    -p texto        Force texto parser");
+	console.log("    -p markdown     Force markdown parser");
 	console.log("");
 	console.log("Examples:");
-	console.log("  texto parse document.txto         Parse file to JSON");
-	console.log("  texto parse -thtml document.txto  Parse file to HTML");
-	console.log("  texto parse -txml document.txto   Parse file to XML AST");
-	console.log("  texto parse -p document.txto      Parse with positions");
-	console.log('  echo "Hello" | texto format      Parse stdin and reformat');
+	console.log(
+		"  texto parse doc.md              # Auto-detect markdown from extension",
+	);
+	console.log(
+		"  texto parse -p markdown doc.txt # Force markdown on .txt file",
+	);
+	console.log("  texto parse -thtml doc.md      # Markdown → HTML output");
+	console.log("  echo '# Hi' | texto parse       # Stdin with texto profile");
+	console.log('  echo "Hello" | texto format      # Parse stdin and reformat');
 }
 
 // Run CLI

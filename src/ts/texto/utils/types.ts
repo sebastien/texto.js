@@ -53,6 +53,50 @@ export interface ParseError {
 	severity: "error" | "warning";
 }
 
+export interface TextEdit {
+	offset: number;
+	length: number;
+	text: string;
+}
+
+export type NodePath = number[];
+
+export type AstPatch =
+	| {
+			type: "UPDATE_OFFSETS";
+			startOffset: number;
+			delta: number;
+			lineDelta: number;
+			columnDelta: number;
+	  }
+	| {
+			type: "REPLACE_NODE";
+			path: NodePath;
+			oldNode: Node;
+			newNodes: Node[];
+	  }
+	| {
+			type: "DELETE_NODE";
+			path: NodePath;
+			node: Node;
+	  }
+	| {
+			type: "INSERT_NODE";
+			path: NodePath;
+			node: Node;
+	  }
+	| {
+			type: "MOVE_NODE";
+			fromPath: NodePath;
+			toPath: NodePath;
+	  }
+	| {
+			type: "UPDATE_ATTRIBUTE";
+			path: NodePath;
+			key: string;
+			value: string | null;
+	  };
+
 export const TAB_SIZE = 4;
 
 export enum Priority {

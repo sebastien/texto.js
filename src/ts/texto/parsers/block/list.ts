@@ -1,7 +1,7 @@
 // List block parser with recursive content parsing
 // Enhanced to parse nested blocks within list items
 
-import { createText } from "../../document/node.ts";
+import { createElement, createText } from "../../document/node.ts";
 import type { BlockParsingEngine } from "../../parsing/block.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { BLOCK_PRIORITIES } from "../../parsing/priority.ts";
@@ -10,8 +10,8 @@ import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
 export class ListParser extends BaseBlockParser {
-	constructor() {
-		super("list", BLOCK_PRIORITIES.LIST);
+	constructor(priority?: number) {
+		super("list", priority ?? BLOCK_PRIORITIES.LIST);
 	}
 
 	recognises(cursor: Cursor, _context: ParsingContext): RecognitionInfo | null {
@@ -23,8 +23,8 @@ export class ListParser extends BaseBlockParser {
 		const next = cursor.peek(1);
 		const next2 = cursor.peek(2);
 
-		// Unordered: - or *
-		if (current === "-" || current === "*") {
+		// Unordered: - or * or +
+		if (current === "-" || current === "*" || current === "+") {
 			if (next === " " || next === "\t") {
 				cursor.pos = save.pos;
 				cursor.lineNumber = save.lineNumber;
@@ -113,6 +113,7 @@ export class ListParser extends BaseBlockParser {
 		// Process all list items
 		let iterations = 0;
 		const maxIterations = 100;
+		let hasLooseItem = false;
 
 		while (!cursor.isAtEnd() && iterations < maxIterations) {
 			iterations++;
@@ -131,13 +132,31 @@ export class ListParser extends BaseBlockParser {
 				break;
 			}
 
-			this.processItem(cursor, context, itemInfo, firstIndent, engine);
+			const itemNode = this.processItem(
+				cursor,
+				context,
+				itemInfo,
+				firstIndent,
+				engine,
+			);
+			if (itemNode.attributes.get("_hasBlock") === "true") {
+				hasLooseItem = true;
+			}
 
 			// Move to next item
 			cursor.skipNewlines();
 		}
 
 		const end = cursor.pos;
+
+		if (hasLooseItem) {
+			this.makeListLoose(listNode);
+		}
+		for (const child of listNode.children) {
+			if (child.type === "element" && child.name === "item") {
+				child.attributes.delete("_hasBlock");
+			}
+		}
 
 		// Update list node position to include all items
 		listNode.position = { start, end, line: startLine, column: startColumn };
@@ -192,14 +211,35 @@ export class ListParser extends BaseBlockParser {
 
 		context.builder.pushNode(itemNode);
 
-		// If engine is available, use recursive parsing for content
-		if (engine && contentStart < itemEnd) {
-			// Calculate actual content boundaries
-			// Content is from after marker to end of item
-			engine.parseBlocksInRange(context, itemNode, contentStart, itemEnd);
+		// Check if this item has block-level content (blank lines or nested blocks)
+		const hasBlockContent = this.hasBlockContent(
+			context.getText(),
+			contentStart,
+			itemEnd,
+		);
+		itemNode.attributes.set("_hasBlock", hasBlockContent ? "true" : "false");
+
+		// If engine is available and content has blocks, use recursive parsing
+		if (contentStart < itemEnd && hasBlockContent) {
+			const parsedChildren = this.parseItemBlocks(
+				context,
+				contentStart,
+				itemEnd,
+			);
+			if (parsedChildren) {
+				itemNode.children.push(...parsedChildren);
+			} else if (engine) {
+				// Fallback when parser reference is not available
+				engine.parseBlocksInRange(context, itemNode, contentStart, itemEnd);
+			}
 		} else {
-			// Fallback: Read content as plain text
-			const content = this.readItemContent(cursor, itemEnd, context);
+			// Tight list item - read content as plain text and parse inline
+			const content = this.readItemContent(
+				cursor,
+				contentStart,
+				itemEnd,
+				context,
+			);
 			if (content) {
 				const textNode = createText(content, {
 					start: contentStart,
@@ -217,6 +257,82 @@ export class ListParser extends BaseBlockParser {
 		cursor.pos = itemEnd;
 
 		return itemNode;
+	}
+
+	private makeListLoose(listNode: Node): void {
+		for (const child of listNode.children) {
+			if (child.type !== "element" || child.name !== "item") {
+				continue;
+			}
+
+			const hasElementChildren = child.children.some(
+				(n) => n.type === "element",
+			);
+			if (hasElementChildren) {
+				child.attributes.delete("_hasBlock");
+				continue;
+			}
+
+			const paragraph = createElement("paragraph");
+			paragraph.children = child.children;
+			child.children = [paragraph];
+			child.attributes.delete("_hasBlock");
+		}
+	}
+
+	private parseItemBlocks(
+		context: ParsingContext,
+		contentStart: number,
+		itemEnd: number,
+	): Node[] | null {
+		if (!context.parser) {
+			return null;
+		}
+
+		const raw = context.getText().slice(contentStart, itemEnd);
+		const normalized = this.normalizeItemContentForBlocks(raw);
+		if (!normalized.trim()) {
+			return [];
+		}
+
+		const parsed = context.parser.parse(normalized);
+		return parsed.content.children;
+	}
+
+	private normalizeItemContentForBlocks(raw: string): string {
+		const normalizedNewlines = raw.replace(/\r\n/g, "\n");
+		const lines = normalizedNewlines.split("\n");
+		if (lines.length === 0) {
+			return "";
+		}
+
+		const [first, ...rest] = lines;
+		const normalizedRest = rest.map((line) =>
+			this.stripListContinuationIndent(line),
+		);
+		return [first, ...normalizedRest].join("\n");
+	}
+
+	private stripListContinuationIndent(line: string): string {
+		let index = 0;
+		let removedColumns = 0;
+
+		while (index < line.length && removedColumns < 4) {
+			const char = line[index];
+			if (char === " ") {
+				removedColumns++;
+				index++;
+				continue;
+			}
+			if (char === "\t") {
+				removedColumns = 4;
+				index++;
+				continue;
+			}
+			break;
+		}
+
+		return line.slice(index);
 	}
 
 	private getContentStart(cursor: Cursor, info: RecognitionInfo): number {
@@ -254,7 +370,11 @@ export class ListParser extends BaseBlockParser {
 		this.skipLeadingWhitespace(cursor);
 
 		// Skip the marker
-		if (cursor.current() === "-" || cursor.current() === "*") {
+		if (
+			cursor.current() === "-" ||
+			cursor.current() === "*" ||
+			cursor.current() === "+"
+		) {
 			cursor.advance(2);
 		} else if (cursor.current() === "[") {
 			cursor.advance(4);
@@ -392,11 +512,14 @@ export class ListParser extends BaseBlockParser {
 
 	private readItemContent(
 		cursor: Cursor,
-		endPos: number,
+		contentStart: number,
+		itemEnd: number,
 		context: ParsingContext,
 	): string {
 		const text = context.getText();
-		const content = text.slice(cursor.pos, endPos);
+		// Position cursor at content start
+		cursor.pos = contentStart;
+		const content = text.slice(contentStart, itemEnd);
 		return content.trim();
 	}
 
@@ -418,5 +541,23 @@ export class ListParser extends BaseBlockParser {
 		cursor.lineNumber = save.lineNumber;
 		cursor.columnNumber = save.columnNumber;
 		return result;
+	}
+
+	/**
+	 * Check if list item content has block-level elements (blank lines)
+	 * Returns true if content contains blank lines (indicating loose list)
+	 */
+	private hasBlockContent(
+		text: string,
+		startOffset: number,
+		endOffset: number,
+	): boolean {
+		// Include one extra character so separators that end exactly at endOffset
+		// (e.g. blank line before next list item) are still detected.
+		const scanEnd = Math.min(text.length, endOffset + 1);
+		const content = text.slice(startOffset, scanEnd);
+
+		// Loose list marker: at least one blank line in item content or at boundary.
+		return /\r?\n[ \t]*\r?\n/.test(content);
 	}
 }

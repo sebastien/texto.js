@@ -14,6 +14,8 @@ import { EmphasisParser } from "./parsers/inline/emphasis.ts";
 import { BlockParsingEngine } from "./parsing/block.ts";
 import { ParsingContext } from "./parsing/context.ts";
 import { InlineParsingEngine } from "./parsing/inline.ts";
+import { PhaseRegistry } from "./parsing/phases/registry.ts";
+import type { PreParsePhase } from "./parsing/phases/types.ts";
 import { ParserRegistry } from "./parsing/registry.ts";
 import { Cursor } from "./utils/cursor.ts";
 import type { Document, Node } from "./utils/types.ts";
@@ -21,6 +23,8 @@ import type { Document, Node } from "./utils/types.ts";
 export interface ParserOptions {
 	blockParsers?: BlockParser[];
 	inlineParsers?: InlineParser[];
+	/** Pre-parse phases to run before main parsing (e.g., reference collection) */
+	preParsePhases?: PreParsePhase[];
 	enableOffsets?: boolean;
 	tabSize?: number;
 }
@@ -34,17 +38,27 @@ export class TextoParser {
 	private defaultBlockParser: BlockParser;
 	private blockEngine: BlockParsingEngine;
 	private inlineEngine: InlineParsingEngine;
+	/** Phase registry for pre-parse, inline, and post-parse phases */
+	protected phaseRegistry: PhaseRegistry;
 
 	constructor(options: ParserOptions = {}) {
 		// Initialize registries
 		this.blockRegistry = new ParserRegistry<BlockParser>();
 		this.inlineRegistry = new ParserRegistry<InlineParser>();
+		this.phaseRegistry = new PhaseRegistry();
 
 		// Set default parsers
 		this.defaultBlockParser = new ParagraphParser();
 
 		// Register default parsers
 		this.registerDefaultParsers();
+
+		// Register phases from options
+		if (options.preParsePhases) {
+			for (const phase of options.preParsePhases) {
+				this.phaseRegistry.register(phase);
+			}
+		}
 
 		// Create engines
 		this.blockEngine = new BlockParsingEngine(
@@ -93,7 +107,25 @@ export class TextoParser {
 		const builder = new DocumentBuilder(documentPosition);
 		const context = new ParsingContext(builder, input);
 		context.setText(input);
+		context.setParser(this);
 		context.setCurrentBlock(0, input.length);
+
+		// Execute pre-parse phases (e.g., reference collection)
+		// This allows metadata to be gathered before main parsing
+		const preParsePhases = this.phaseRegistry.getPreParsePhases();
+		for (const phase of preParsePhases) {
+			const result = phase.execute(input, context, builder.getDocument());
+			if (result?.data) {
+				// Merge phase data into context for use by subsequent phases
+				for (const [key, value] of result.data) {
+					// Store in context's keyIndex for access during parsing
+					context.keyIndex.set(`phase.${phase.name}.${key}`, value as Node);
+				}
+			}
+			if (result?.continue === false) {
+				break;
+			}
+		}
 
 		// Use the new recursive block parsing
 		this.parseBlocksInRange(
@@ -176,10 +208,18 @@ export class TextoParser {
 
 			const char = context.currentFragment()[0];
 
-			if (char === "\n") {
+			if (char === "\n" || char === "\r") {
 				// This is the end of a potentially blank line
-				// Advance past the newline
+				// Advance past the line ending
 				context.advanceOffset(1);
+
+				// For CRLF (\r\n), also skip the \n
+				if (char === "\r" && !context.isAtBlockEnd()) {
+					const nextChar = context.currentFragment()[0];
+					if (nextChar === "\n") {
+						context.advanceOffset(1);
+					}
+				}
 
 				// Continue the loop to check if there are more blank lines
 				continue;
@@ -197,6 +237,34 @@ export class TextoParser {
 		context: ParsingContext,
 		baseOffset: number = 0,
 	): void {
+		// Inject pre-collected references into context for link resolution
+		// The reference collection phase stores data in context.keyIndex
+		const phaseData = context.keyIndex.get(
+			"phase.reference-collection.references",
+		);
+		if (phaseData && "entries" in phaseData) {
+			// This is a Map of references - convert to target entries
+			const refMap = phaseData as Map<
+				string,
+				{ url: string; title: string; line: number }
+			>;
+			for (const [label, { url, title }] of refMap) {
+				// Create synthetic target node for reference lookup
+				const targetNode = {
+					type: "element" as const,
+					name: "target",
+					attributes: new Map([
+						["name", label],
+						["target", url],
+						["title", title],
+					]),
+					children: [],
+					position: { start: 0, end: 0, line: 0, column: 0 },
+				};
+				context.addTarget(targetNode, label);
+			}
+		}
+
 		const cursor = new Cursor(text);
 		this.inlineEngine.parseInlines(
 			cursor,
