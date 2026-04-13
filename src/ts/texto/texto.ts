@@ -12,6 +12,7 @@ import { TaggedBlockParser } from "./parsers/block/tagged.ts";
 // Inline parsers
 import { EmphasisParser } from "./parsers/inline/emphasis.ts";
 import { BlockParsingEngine } from "./parsing/block.ts";
+import { annotateBlockStructure } from "./parsing/block-structure.ts";
 import { ParsingContext } from "./parsing/context.ts";
 import { InlineParsingEngine } from "./parsing/inline.ts";
 import { PhaseRegistry } from "./parsing/phases/registry.ts";
@@ -144,6 +145,7 @@ export class TextoParser {
 
 		// Clean up empty nodes
 		builder.normalizeEmptyNodes();
+		annotateBlockStructure(builder.getDocument());
 
 		return builder.getDocument();
 	}

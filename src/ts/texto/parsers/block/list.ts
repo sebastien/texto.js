@@ -267,13 +267,17 @@ export class ListParser extends BaseBlockParser {
 				this.getContinuationStripWidth(info),
 			);
 			if (content) {
-				const textNode = createText(content, {
-					start: contentStart,
-					end: itemEnd,
-					line: contentStartLine,
-					column: contentStartColumn,
-				});
-				itemNode.children.push(textNode);
+				if (context.parser) {
+					context.parser.parseInlines(content, itemNode, context, contentStart);
+				} else {
+					const textNode = createText(content, {
+						start: contentStart,
+						end: itemEnd,
+						line: contentStartLine,
+						column: contentStartColumn,
+					});
+					itemNode.children.push(textNode);
+				}
 			}
 		}
 

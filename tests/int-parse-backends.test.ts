@@ -63,6 +63,12 @@ describe("parse output backends", () => {
 		expect(output).toContain("<p>Hello world</p>");
 	});
 
+	test("parses strong inline markup inside tight list items", async () => {
+		writeFileSync(fixturePath, "- It supports **markdown-like** syntax\n");
+		const output = await parseCommand({ file: fixturePath, format: "html" });
+		expect(output).toContain("<strong>markdown-like</strong>");
+	});
+
 	test("rejects unknown backend", async () => {
 		await expect(
 			parseCommand({ file: fixturePath, format: "wat" as never }),

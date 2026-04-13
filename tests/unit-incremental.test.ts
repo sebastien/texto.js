@@ -83,4 +83,19 @@ describe("IncrementalParser", () => {
 
 		expect(parseCalls).toBe(0);
 	});
+
+	test("patch preserves structural block annotations", () => {
+		const parser = new TextoParser();
+		const incremental = new IncrementalParser("Hello\n\nWorld", parser);
+
+		incremental.patch({ offset: 5, length: 0, text: "!" });
+
+		expect(incremental.tree.content.attributes.get("block")).toBe("container");
+		expect(incremental.tree.content.attributes.get("level")).toBe("0");
+
+		for (const child of incremental.tree.content.children) {
+			expect(child.attributes.get("block")).toBe("block");
+			expect(child.attributes.get("level")).toBe("1");
+		}
+	});
 });

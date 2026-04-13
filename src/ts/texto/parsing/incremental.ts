@@ -1,5 +1,6 @@
 import { TextoParser } from "../texto.ts";
 import { DocumentBuilder } from "../document/builder.ts";
+import { annotateBlockStructure } from "./block-structure.ts";
 import { ParsingContext } from "./context.ts";
 import type { AstPatch, Document, Node, TextEdit } from "../utils/types.ts";
 
@@ -440,10 +441,12 @@ export function applyAstPatches(tree: Document, patches: AstPatch[]): void {
 								1,
 								node.position.line + patch.lineDelta,
 							);
-							node.position.column = Math.max(
-								0,
-								node.position.column + patch.columnDelta,
-							);
+							if (patch.lineDelta !== 0 || node.position.column > 0) {
+								node.position.column = Math.max(
+									0,
+									node.position.column + patch.columnDelta,
+								);
+							}
 						} else if (node.position.end >= patch.startOffset) {
 							node.position.end += patch.delta;
 						}
@@ -570,6 +573,7 @@ export class IncrementalParser {
 
 		this.source = nextSource;
 		applyAstPatches(this.tree, patches);
+		annotateBlockStructure(this.tree);
 
 		return patches;
 	}
