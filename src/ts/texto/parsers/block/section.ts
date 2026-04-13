@@ -55,7 +55,6 @@ export class SectionParser extends BaseBlockParser {
 
 		const _line = cursor.readLine();
 		if (!cursor.isAtEnd()) {
-			cursor.advance(); // skip newline
 			const underline = cursor.readLine();
 
 			if (/^[=-]+$/.test(underline) && underline.length >= 3) {
@@ -135,7 +134,6 @@ export class SectionParser extends BaseBlockParser {
 
 			// Skip underline line
 			if (!cursor.isAtEnd()) {
-				cursor.advance(); // newline
 				cursor.readLine();
 			}
 

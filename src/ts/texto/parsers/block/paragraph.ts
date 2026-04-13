@@ -101,9 +101,15 @@ export class ParagraphParser extends BaseBlockParser {
 					nextLineStart,
 				).trim();
 				const nextLineFull = this.readLineFromText(text, nextLineStart);
+				const tableBorderLine = /^\s*={3,}\s*$/.test(nextLineFull);
 
 				// If next line is blank, end after this line
 				if (nextLineContent === "") {
+					break;
+				}
+
+				// If next line is a table border (===...), end paragraph
+				if (tableBorderLine) {
 					break;
 				}
 

@@ -59,7 +59,12 @@ export function createMarkdownParser(
 	const blockParsers: BlockParser[] = [
 		new HorizontalRuleParser(), // Priority: 10
 		new HeaderParser(), // Priority: 25 (handles # headers and underline)
-		new ListParser(24), // Priority: 24 (handles -, *, 1. lists - must be before SectionParser)
+		new ListParser({
+			priority: 24,
+			stripContinuationIndent: false,
+			orderedMarker: ".",
+			includeBoundaryBlankLine: true,
+		}), // Priority: 24 (handles -, *, 1. lists - must be before SectionParser)
 		new BlockquoteParser(), // Priority: 28
 		new ReferenceDefinitionParser(), // Priority: 38 ([ref]: url)
 		new IndentedCodeParser(), // Priority: 20 (4-space indented)

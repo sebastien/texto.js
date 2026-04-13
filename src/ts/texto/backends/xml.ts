@@ -15,7 +15,9 @@ function positionAttributes(node: Node, options: BackendOptions): string {
 		return "";
 	}
 	const { start, end, line, column } = node.position;
-	return ` start="${start}" end="${end}" line="${line}" column="${column}"`;
+	const block =
+		node.position.block !== undefined ? ` block="${node.position.block}"` : "";
+	return ` start="${start}" end="${end}" line="${line}" column="${column}"${block}`;
 }
 
 function nodeToXML(

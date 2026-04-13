@@ -153,10 +153,19 @@ export class BlockParsingEngine {
 			this, // Pass the engine for recursive parsing
 		);
 
+		if (result?.node?.position && !this.isIgnoredMarkupBlock(recognised.info)) {
+			result.node.position.block = context.getNextBlockNumber();
+		}
+
 		// Restore original state
 		context.restoreOffsets(savedState);
 
 		return result;
+	}
+
+	private isIgnoredMarkupBlock(info: Record<string, unknown>): boolean {
+		const type = info.type;
+		return type === "markup" || type === "html";
 	}
 
 	// Find the end of a tagged block by looking for the closing line of underscores

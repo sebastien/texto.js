@@ -9,9 +9,27 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
+export interface ListParserOptions {
+	priority?: number;
+	stripContinuationIndent?: boolean;
+	orderedMarker?: ")" | "." | "both";
+	includeBoundaryBlankLine?: boolean;
+}
+
 export class ListParser extends BaseBlockParser {
-	constructor(priority?: number) {
-		super("list", priority ?? BLOCK_PRIORITIES.LIST);
+	private stripContinuationIndent: boolean;
+	private orderedMarker: ")" | "." | "both";
+	private includeBoundaryBlankLine: boolean;
+
+	constructor(priorityOrOptions?: number | ListParserOptions) {
+		const options =
+			typeof priorityOrOptions === "number"
+				? { priority: priorityOrOptions }
+				: (priorityOrOptions ?? {});
+		super("list", options.priority ?? BLOCK_PRIORITIES.LIST);
+		this.stripContinuationIndent = options.stripContinuationIndent ?? false;
+		this.orderedMarker = options.orderedMarker ?? "both";
+		this.includeBoundaryBlankLine = options.includeBoundaryBlankLine ?? true;
 	}
 
 	recognises(cursor: Cursor, _context: ParsingContext): RecognitionInfo | null {
@@ -29,7 +47,7 @@ export class ListParser extends BaseBlockParser {
 				cursor.pos = save.pos;
 				cursor.lineNumber = save.lineNumber;
 				cursor.columnNumber = save.columnNumber;
-				return { type: "list", listType: "unordered" };
+				return { type: "list", listType: "unordered", markerWidth: 2 };
 			}
 		}
 
@@ -48,7 +66,7 @@ export class ListParser extends BaseBlockParser {
 				cursor.lineNumber = save.lineNumber;
 				cursor.columnNumber = save.columnNumber;
 				const checked = next === "x" || next === "X";
-				return { type: "list", listType: "todo", checked };
+				return { type: "list", listType: "todo", checked, markerWidth: 4 };
 			}
 		}
 
@@ -59,14 +77,21 @@ export class ListParser extends BaseBlockParser {
 				numEnd++;
 			}
 			const marker = cursor.peek(numEnd);
+			const orderedMarkerAllowed =
+				this.orderedMarker === "both" || this.orderedMarker === marker;
 			if (
+				orderedMarkerAllowed &&
 				(marker === ")" || marker === ".") &&
 				(cursor.peek(numEnd + 1) === " " || cursor.peek(numEnd + 1) === "\t")
 			) {
 				cursor.pos = save.pos;
 				cursor.lineNumber = save.lineNumber;
 				cursor.columnNumber = save.columnNumber;
-				return { type: "list", listType: "ordered" };
+				return {
+					type: "list",
+					listType: "ordered",
+					markerWidth: numEnd + 2,
+				};
 			}
 		}
 
@@ -239,6 +264,7 @@ export class ListParser extends BaseBlockParser {
 				contentStart,
 				itemEnd,
 				context,
+				this.getContinuationStripWidth(info),
 			);
 			if (content) {
 				const textNode = createText(content, {
@@ -337,17 +363,11 @@ export class ListParser extends BaseBlockParser {
 
 	private getContentStart(cursor: Cursor, info: RecognitionInfo): number {
 		const save = cursor.clone();
+		const markerWidth = this.getMarkerWidth(info);
 
 		// Skip marker
-		if (info.listType === "unordered") {
-			cursor.advance(2); // "- " or "* "
-		} else if (info.listType === "todo") {
-			cursor.advance(4); // "[ ] " or "[x] "
-		} else if (info.listType === "ordered") {
-			while (/[0-9a-zA-Z]/.test(cursor.current() || "")) {
-				cursor.advance();
-			}
-			cursor.advance(2); // marker + space
+		if (markerWidth > 0) {
+			cursor.advance(markerWidth);
 		}
 
 		const contentStart = cursor.pos;
@@ -515,12 +535,56 @@ export class ListParser extends BaseBlockParser {
 		contentStart: number,
 		itemEnd: number,
 		context: ParsingContext,
+		markerWidth: number,
 	): string {
 		const text = context.getText();
 		// Position cursor at content start
 		cursor.pos = contentStart;
 		const content = text.slice(contentStart, itemEnd);
-		return content.trim();
+		if (!this.stripContinuationIndent) {
+			return content.trim();
+		}
+
+		const normalized = content.replace(/\r\n/g, "\n");
+		const lines = normalized.split("\n");
+		if (lines.length <= 1) {
+			return normalized.trim();
+		}
+
+		const [first, ...rest] = lines;
+		const cleaned = rest.map((line) =>
+			this.stripIndentColumns(line, markerWidth),
+		);
+		return [first, ...cleaned].join("\n").trim();
+	}
+
+	private stripIndentColumns(line: string, maxColumns: number): string {
+		if (maxColumns <= 0) {
+			return line;
+		}
+		return line.trimStart();
+	}
+
+	private getMarkerWidth(info: RecognitionInfo): number {
+		const markerWidth = info.markerWidth;
+		if (typeof markerWidth === "number" && markerWidth > 0) {
+			return markerWidth;
+		}
+
+		if (info.listType === "todo") {
+			return 4;
+		}
+		if (info.listType === "ordered") {
+			return 3;
+		}
+		return 2;
+	}
+
+	private getContinuationStripWidth(info: RecognitionInfo): number {
+		if (!this.stripContinuationIndent) {
+			return 0;
+		}
+		return this.getMarkerWidth(info);
 	}
 
 	private countIndent(cursor: Cursor): number {
@@ -552,9 +616,9 @@ export class ListParser extends BaseBlockParser {
 		startOffset: number,
 		endOffset: number,
 	): boolean {
-		// Include one extra character so separators that end exactly at endOffset
-		// (e.g. blank line before next list item) are still detected.
-		const scanEnd = Math.min(text.length, endOffset + 1);
+		const scanEnd = this.includeBoundaryBlankLine
+			? Math.min(text.length, endOffset + 1)
+			: endOffset;
 		const content = text.slice(startOffset, scanEnd);
 
 		// Loose list marker: at least one blank line in item content or at boundary.

@@ -5,6 +5,7 @@ export interface Position {
 	end: number;
 	line: number;
 	column: number;
+	block?: number;
 }
 
 export interface Node {

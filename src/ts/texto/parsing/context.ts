@@ -44,6 +44,7 @@ export class ParsingContext {
 	private _blockEndOffset: number = -1;
 	private _lineNumber: number = 1;
 	private _columnNumber: number = 0;
+	private _nextBlockNumber: number = 0;
 
 	// NEW: Cursor for character-based parsing (backward compatibility)
 	private _cursor: Cursor | null = null;
@@ -68,7 +69,14 @@ export class ParsingContext {
 		this._blockEndOffset = text.length;
 		this._lineNumber = 1;
 		this._columnNumber = 0;
+		this._nextBlockNumber = 0;
 		this._cursor = new Cursor(text);
+	}
+
+	getNextBlockNumber(): number {
+		const current = this._nextBlockNumber;
+		this._nextBlockNumber += 1;
+		return current;
 	}
 
 	// NEW: Get current text
@@ -309,6 +317,7 @@ export class ParsingContext {
 		clone._blockEndOffset = this._blockEndOffset;
 		clone._lineNumber = this._lineNumber;
 		clone._columnNumber = this._columnNumber;
+		clone._nextBlockNumber = this._nextBlockNumber;
 
 		return clone;
 	}

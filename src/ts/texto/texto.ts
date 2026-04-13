@@ -88,7 +88,14 @@ export class TextoParser {
 		this.blockRegistry.register(new IndentedPreBlockParser(), 19); // Old-style indented pre blocks
 		this.blockRegistry.register(new SectionParser(), 25);
 		this.blockRegistry.register(new DefinitionListParser(), 32);
-		this.blockRegistry.register(new ListParser(), 35);
+		this.blockRegistry.register(
+			new ListParser({
+				stripContinuationIndent: true,
+				orderedMarker: ")",
+				includeBoundaryBlankLine: false,
+			}),
+			35,
+		);
 		// Add more as implemented...
 
 		// Register default inline parsers

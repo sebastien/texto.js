@@ -24,13 +24,40 @@ describe("parse output backends", () => {
 		expect(output).toContain('"content"');
 	});
 
+	test("includes 0-based block numbers with --positions in json", async () => {
+		writeFileSync(fixturePath, "First block\n\nSecond block\n");
+		const output = await parseCommand({
+			file: fixturePath,
+			includePositions: true,
+		});
+		const parsed = JSON.parse(output) as {
+			content?: { children?: Array<{ position?: { block?: number } }> };
+		};
+		const blocks = (parsed.content?.children || []).map(
+			(node) => node.position?.block,
+		);
+		expect(blocks).toEqual([0, 1]);
+	});
+
 	test("supports xml backend", async () => {
 		const output = await parseCommand({ file: fixturePath, format: "xml" });
 		expect(output).toContain('<?xml version="1.0" encoding="UTF-8"?>');
 		expect(output).toContain('<ast type="document">');
 	});
 
+	test("includes block attribute with --positions in xml", async () => {
+		writeFileSync(fixturePath, "Alpha\n\nBeta\n");
+		const output = await parseCommand({
+			file: fixturePath,
+			format: "xml",
+			includePositions: true,
+		});
+		expect(output).toContain('block="0"');
+		expect(output).toContain('block="1"');
+	});
+
 	test("supports html backend", async () => {
+		writeFileSync(fixturePath, "Hello world\n");
 		const output = await parseCommand({ file: fixturePath, format: "html" });
 		expect(output).toContain("<!doctype html>");
 		expect(output).toContain("<p>Hello world</p>");

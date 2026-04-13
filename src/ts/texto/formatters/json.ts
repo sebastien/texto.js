@@ -32,6 +32,9 @@ function nodeToObject(node: Node, options: JSONOptions): unknown {
 			end: node.position.end,
 			line: node.position.line,
 			column: node.position.column,
+			...(node.position.block !== undefined
+				? { block: node.position.block }
+				: {}),
 		};
 	}
 

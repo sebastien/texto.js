@@ -188,7 +188,7 @@ function formatSection(node: Node): string {
 	if (style === "numbered") {
 		// Numbered section: 1. Title
 		const number = node.attributes.get("_number") || "";
-		heading = `${number} ${title}`;
+		heading = `${number}. ${title}`;
 	} else if (style === "hash") {
 		// Hash section: # Title or ## Title
 		heading = `${"#".repeat(depth)} ${title}`;
@@ -223,7 +223,7 @@ function formatList(node: Node): string {
 
 	const formatted = items.map((item, index) => {
 		const indent = item.attributes.get("_indent") || "0";
-		const spaces = " ".repeat(parseInt(indent, 10));
+		const spaces = type === "ordered" ? "" : " ".repeat(parseInt(indent, 10));
 
 		// Handle nested blocks in list items
 		const itemText = formatItemWithNestedBlocks(item, parseInt(indent, 10));
@@ -256,7 +256,9 @@ function formatListItemText(
 	}
 
 	const continuation = " ".repeat(marker.length);
-	const rest = lines.slice(1).map((line) => `${spaces}${continuation}${line}`);
+	const rest = lines
+		.slice(1)
+		.map((line) => `${spaces}${continuation}${line.trimStart()}`);
 
 	return [`${spaces}${marker}${firstLine}`, ...rest].join("\n");
 }
