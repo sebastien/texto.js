@@ -14,7 +14,8 @@ type CLIParamType =
 	| "number"
 	| "time"
 	| "date"
-	| "datetime";
+	| "datetime"
+	| "attached"; // For flags like -thtml (value attached to short flag)
 
 type CLIParams = Record<string, CLIParam>;
 
@@ -55,6 +56,7 @@ type CLIParamError = {
 function convertValue(value: string, type: CLIParamType): unknown | null {
 	switch (type) {
 		case "string":
+		case "attached":
 			return value;
 		case "boolean":
 			if (value === "true" || value === "1") return true;
@@ -112,6 +114,7 @@ function getFlagName(arg: string): {
 	isNegated: boolean;
 	hasValue: boolean;
 	value?: string;
+	isAttachedValue?: boolean;
 } | null {
 	if (arg.startsWith("--")) {
 		const rest = arg.slice(2);
@@ -133,11 +136,26 @@ function getFlagName(arg: string): {
 				hasValue: false,
 			};
 		}
+		// For long flags like --to xml, the next arg might be the value
+		// We'll handle this in the main loop
 		return { name: rest, isLong: true, isNegated: false, hasValue: false };
 	}
 	if (arg.startsWith("-") && arg.length > 1) {
+		// Check for attached value like -thtml
+		// Pattern: single letter followed by non-flag characters
+		const rest = arg.slice(1);
+		if (rest.length > 1 && !rest.startsWith("-")) {
+			return {
+				name: rest[0],
+				isLong: false,
+				isNegated: false,
+				hasValue: true,
+				value: rest.slice(1),
+				isAttachedValue: true,
+			};
+		}
 		return {
-			name: arg.slice(1),
+			name: rest,
 			isLong: false,
 			isNegated: false,
 			hasValue: false,
@@ -165,7 +183,7 @@ function* iargs(
 	...args: string[]
 ): Generator<CLIParamError, CLIArgs> {
 	const lookup = buildLookup(params);
-	const result: CLIArgs = {};
+	const result: CLIArgs = { _positional: [] as string[] };
 	const provided = new Set<string>();
 
 	// Apply defaults
@@ -181,14 +199,8 @@ function* iargs(
 		const flag = getFlagName(arg);
 
 		if (!flag) {
-			yield {
-				name: "",
-				index: i,
-				param: null,
-				code: "unknown",
-				message: `Unexpected positional argument: "${arg}"`,
-				value: arg,
-			};
+			// Collect positional argument
+			(result._positional as string[]).push(arg);
 			i++;
 			continue;
 		}
@@ -215,6 +227,12 @@ function* iargs(
 				if (param.type === "boolean") {
 					result[paramName] = true;
 					provided.add(paramName);
+				} else if (param.type === "attached" && j < flag.name.length - 1) {
+					// Attached value: rest of the flag name is the value
+					const attachedValue = flag.name.slice(j + 1);
+					result[paramName] = attachedValue;
+					provided.add(paramName);
+					break; // Stop processing remaining chars
 				} else {
 					yield {
 						name: paramName,
@@ -270,6 +288,34 @@ function* iargs(
 		let value: string;
 		if (flag.hasValue) {
 			value = flag.value!;
+		} else if (param.type === "attached" && !flag.isLong) {
+			// Attached type for short flags requires value attached to flag
+			yield {
+				name: paramName,
+				index: i,
+				param,
+				code: "required",
+				message: `Flag "-${flag.name}" requires an attached value (e.g., -${flag.name}value)`,
+				value: arg,
+			};
+			i++;
+			continue;
+		} else if (flag.isLong && param.type !== "boolean") {
+			// Long flag without value: check if next arg is a value (not a flag)
+			if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+				yield {
+					name: paramName,
+					index: i,
+					param,
+					code: "required",
+					message: `Flag "--${flag.name}" requires a value`,
+					value: arg,
+				};
+				i++;
+				continue;
+			}
+			value = args[i + 1];
+			i++;
 		} else if (param.type === "boolean") {
 			// Boolean flag without value sets it to true
 			result[paramName] = true;
@@ -394,8 +440,10 @@ function help(params: CLIParams, meta: CLIMeta): string {
 			if (param.short) {
 				if (param.type === "boolean") {
 					flags += `-${param.short}`;
+				} else if (param.type === "attached") {
+					flags += `-${param.short}<value>`;
 				} else {
-					flags += `-${param.short} <${param.type}>`;
+					flags += `-${param.short} <value>`;
 				}
 			}
 			if (param.long) {
@@ -403,7 +451,7 @@ function help(params: CLIParams, meta: CLIMeta): string {
 				if (param.type === "boolean") {
 					flags += `--${param.long}`;
 				} else {
-					flags += `--${param.long} <${param.type}>`;
+					flags += `--${param.long} <value>`;
 				}
 			}
 			maxFlagWidth = Math.max(maxFlagWidth, flags.length);

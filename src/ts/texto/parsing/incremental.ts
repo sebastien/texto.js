@@ -159,6 +159,7 @@ function diffNodes(
 
 function cloneNode(node: Node): Node {
 	return {
+		id: node.id,
 		type: node.type,
 		name: node.name,
 		content: node.content,
@@ -471,11 +472,12 @@ export function applyAstPatches(tree: Document, patches: AstPatch[]): void {
 				if (!location) {
 					break;
 				}
-				location.parent.children.splice(
-					location.index,
-					1,
-					...patch.newNodes.map((node) => cloneNode(node)),
-				);
+				const previous = location.parent.children[location.index];
+				const nextNodes = patch.newNodes.map((node) => cloneNode(node));
+				if (previous && nextNodes.length === 1) {
+					nextNodes[0].id = previous.id;
+				}
+				location.parent.children.splice(location.index, 1, ...nextNodes);
 				break;
 			}
 			case "DELETE_NODE": {

@@ -22,6 +22,7 @@ export {
 	createComment,
 	createElement,
 	createText,
+	resetNodeIdCounter,
 	getAttribute,
 	isComment,
 	isElement,
@@ -40,6 +41,7 @@ export {
 } from "./document/tree.ts";
 // Formatters
 export {
+	deserializeDocument,
 	formatJSON,
 	toJSON,
 } from "./formatters/json.ts";

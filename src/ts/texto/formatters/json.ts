@@ -23,6 +23,7 @@ function documentToObject(doc: Document, options: JSONOptions): unknown {
 
 function nodeToObject(node: Node, options: JSONOptions): unknown {
 	const base: Record<string, unknown> = {
+		id: node.id,
 		type: node.type,
 	};
 
@@ -78,4 +79,77 @@ export function toJSON(
 		null,
 		2,
 	);
+}
+
+export function deserializeDocument(jsonString: string): Document {
+	const obj = JSON.parse(jsonString);
+
+	function objectToNode(data: unknown): Node {
+		if (typeof data !== "object" || data === null) {
+			throw new Error("Invalid node data: expected object");
+		}
+
+		const record = data as Record<string, unknown>;
+
+		if (record.type === "document") {
+			return {
+				type: "document",
+				header: objectToNode(record.header),
+				content: objectToNode(record.content),
+				references: objectToNode(record.references),
+				appendices: objectToNode(record.appendices),
+			};
+		}
+
+		const node: Node = {
+			id:
+				typeof record.id === "number"
+					? record.id
+					: Number(record.id ?? Number.NaN),
+			type: record.type as "element" | "text" | "comment",
+			attributes: new Map(),
+			children: [],
+		};
+
+		if (!Number.isFinite(node.id)) {
+			throw new Error("Invalid node data: expected numeric id");
+		}
+
+		if (record.name) {
+			node.name = record.name as string;
+		}
+
+		if (record.content) {
+			node.content = record.content as string;
+		}
+
+		if (record.attributes && typeof record.attributes === "object") {
+			for (const [key, value] of Object.entries(record.attributes)) {
+				node.attributes.set(key, value as string);
+			}
+		}
+
+		if (record.children && Array.isArray(record.children)) {
+			node.children = (record.children as unknown[]).map(objectToNode);
+		}
+
+		if (record.position && typeof record.position === "object") {
+			const pos = record.position as Record<string, unknown>;
+			node.position = {
+				start: pos.start as number,
+				end: pos.end as number,
+				line: pos.line as number,
+				column: pos.column as number,
+				...(pos.block !== undefined ? { block: pos.block as number } : {}),
+			};
+		}
+
+		return node;
+	}
+
+	const doc = objectToNode(obj);
+	if (doc.type !== "document") {
+		throw new Error("Invalid JSON: root must be a document");
+	}
+	return doc;
 }

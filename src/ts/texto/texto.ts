@@ -1,6 +1,7 @@
 // Main TextoParser class
 
 import { DocumentBuilder } from "./document/builder.ts";
+import { createElement, resetNodeIdCounter } from "./document/node.ts";
 import { DefinitionListParser } from "./parsers/block/definition-list.ts";
 import { FencedBlockParser } from "./parsers/block/fenced.ts";
 import { IndentedPreBlockParser } from "./parsers/block/indented-pre.ts";
@@ -105,6 +106,7 @@ export class TextoParser {
 	}
 
 	parse(input: string): Document {
+		resetNodeIdCounter(1);
 		// Create document position spanning the entire input
 		const documentPosition = {
 			start: 0,
@@ -259,17 +261,11 @@ export class TextoParser {
 			>;
 			for (const [label, { url, title }] of refMap) {
 				// Create synthetic target node for reference lookup
-				const targetNode = {
-					type: "element" as const,
-					name: "target",
-					attributes: new Map([
-						["name", label],
-						["target", url],
-						["title", title],
-					]),
-					children: [],
-					position: { start: 0, end: 0, line: 0, column: 0 },
-				};
+				const targetNode = createElement(
+					"target",
+					{ name: label, target: url, title },
+					{ start: 0, end: 0, line: 0, column: 0 },
+				);
 				context.addTarget(targetNode, label);
 			}
 		}

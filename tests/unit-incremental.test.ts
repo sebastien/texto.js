@@ -98,4 +98,36 @@ describe("IncrementalParser", () => {
 			expect(child.attributes.get("level")).toBe("1");
 		}
 	});
+
+	test("patch preserves ids for updated nodes and assigns ids to inserted nodes", () => {
+		const parser = new TextoParser();
+		const incremental = new IncrementalParser("Hello\n\nWorld", parser);
+
+		const firstParagraphBefore = incremental.tree.content.children[0];
+		const firstTextBefore = firstParagraphBefore.children[0];
+		const existingIds = new Set<number>();
+		for (const block of incremental.tree.content.children) {
+			existingIds.add(block.id);
+			for (const child of block.children) {
+				existingIds.add(child.id);
+			}
+		}
+
+		incremental.patch({ offset: 5, length: 0, text: "!" });
+
+		const firstParagraphAfter = incremental.tree.content.children[0];
+		const firstTextAfter = firstParagraphAfter.children[0];
+		expect(firstParagraphAfter.id).toBe(firstParagraphBefore.id);
+		expect(firstTextAfter.id).toBe(firstTextBefore.id);
+
+		incremental.patch({
+			offset: incremental.source.length,
+			length: 0,
+			text: "\n\nAgain",
+		});
+
+		const insertedBlock = incremental.tree.content.children.at(-1);
+		expect(insertedBlock).toBeDefined();
+		expect(existingIds.has(insertedBlock!.id)).toBe(false);
+	});
 });

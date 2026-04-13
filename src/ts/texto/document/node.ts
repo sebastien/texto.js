@@ -2,12 +2,25 @@
 
 import type { Node, Position } from "../utils/types.ts";
 
+let nextNodeId = 1;
+
+export function resetNodeIdCounter(start = 1): void {
+	nextNodeId = Math.max(1, start);
+}
+
+function allocateNodeId(): number {
+	const id = nextNodeId;
+	nextNodeId += 1;
+	return id;
+}
+
 export function createElement(
 	name: string,
 	attributes: Record<string, string> = {},
 	position?: Position,
 ): Node {
 	return {
+		id: allocateNodeId(),
 		type: "element",
 		name,
 		attributes: new Map(Object.entries(attributes)),
@@ -18,6 +31,7 @@ export function createElement(
 
 export function createText(content: string, position?: Position): Node {
 	return {
+		id: allocateNodeId(),
 		type: "text",
 		content,
 		attributes: new Map(),
@@ -28,6 +42,7 @@ export function createText(content: string, position?: Position): Node {
 
 export function createComment(content: string, position?: Position): Node {
 	return {
+		id: allocateNodeId(),
 		type: "comment",
 		content,
 		attributes: new Map(),

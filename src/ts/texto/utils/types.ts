@@ -9,6 +9,7 @@ export interface Position {
 }
 
 export interface Node {
+	id: number;
 	type: "element" | "text" | "comment";
 	name?: string;
 	content?: string;
