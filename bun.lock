@@ -1,0 +1,19 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "dependencies": {
+        "fast-diff": "^1.3.0",
+      },
+      "devDependencies": {
+        "@types/fast-diff": "^1.2.2",
+      },
+    },
+  },
+  "packages": {
+    "@types/fast-diff": ["@types/fast-diff@1.2.2", "", { "dependencies": { "fast-diff": "*" } }, "sha512-LGvjTf0EWx7i1FLigk5veOlZIeFcw3hAQUlsanWSZsEWOE9B94bhqRSAcgIpUFgxRsjLZSvx7k58InDE6z5Nfg=="],
+
+    "fast-diff": ["fast-diff@1.3.0", "", {}, "sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw=="],
+  }
+}

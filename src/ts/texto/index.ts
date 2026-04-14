@@ -106,6 +106,20 @@ export {
 	init as initIncrementalParser,
 } from "./parsing/incremental.ts";
 export {
+	apply,
+	delta,
+	revert,
+	setDiffEngine,
+	type ApplyResult,
+	type DiffChange,
+	type DiffEngine,
+	type DeleteOp,
+	type Delta,
+	type DeltaOp,
+	type InsertOp,
+	type RetainOp,
+} from "./delta.ts";
+export {
 	BLOCK_PRIORITIES,
 	HIGH,
 	HIGHEST,
