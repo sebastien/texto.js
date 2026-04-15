@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/code
+// Implements the parsers/inline/code module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Inline code parser
 // Handles `code` and `` `backticks` `` patterns
 // Double backticks allow single backticks inside code
@@ -9,7 +22,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
-export class CodeParser extends BaseInlineParser {
+class CodeParser extends BaseInlineParser {
 	constructor() {
 		super("code", INLINE_PRIORITIES.CODE);
 	}
@@ -106,3 +119,12 @@ export class CodeParser extends BaseInlineParser {
 		return match.end;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { CodeParser };
+
+// EOF

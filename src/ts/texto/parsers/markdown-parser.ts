@@ -1,15 +1,28 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/markdown-parser
+// Implements the parsers/markdown-parser module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Markdown parser with reference definition pre-scanning
 // Uses the phase-based parsing system for extensible processing
 
-import { ReferenceCollectionPhase } from "../parsing/phases/reference-collection.ts";
-import { TextoParser } from "../texto.ts";
 import type { BlockParser } from "../parsers/block/base.ts";
 import type { InlineParser } from "../parsers/inline/base.ts";
+import { ReferenceCollectionPhase } from "../parsing/phases/reference-collection.ts";
+import { TextoParser } from "../texto.ts";
 
 /**
  * Extended parser options for markdown.
  */
-export interface MarkdownParserOptions {
+interface MarkdownParserOptions {
 	/** Block parsers to use */
 	blockParsers?: BlockParser[];
 	/** Inline parsers to use */
@@ -23,7 +36,7 @@ export interface MarkdownParserOptions {
  * Automatically includes the ReferenceCollectionPhase for resolving
  * reference-style links and images.
  */
-export class MarkdownParser extends TextoParser {
+class MarkdownParser extends TextoParser {
 	private referencePhase: ReferenceCollectionPhase;
 
 	constructor(options: MarkdownParserOptions = {}) {
@@ -54,3 +67,13 @@ export class MarkdownParser extends TextoParser {
 		return this.referencePhase.getReferences();
 	}
 }
+
+export type { MarkdownParserOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { MarkdownParser };
+
+// EOF

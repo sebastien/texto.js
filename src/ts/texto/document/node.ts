@@ -1,10 +1,23 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/document/node
+// Implements the document/node module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Node creation and manipulation
 
 import type { Node, Position } from "../utils/types.ts";
 
 let nextNodeId = 1;
 
-export function resetNodeIdCounter(start = 1): void {
+function resetNodeIdCounter(start = 1): void {
 	nextNodeId = Math.max(1, start);
 }
 
@@ -14,7 +27,7 @@ function allocateNodeId(): number {
 	return id;
 }
 
-export function createElement(
+function createElement(
 	name: string,
 	attributes: Record<string, string> = {},
 	position?: Position,
@@ -29,7 +42,7 @@ export function createElement(
 	};
 }
 
-export function createText(content: string, position?: Position): Node {
+function createText(content: string, position?: Position): Node {
 	return {
 		id: allocateNodeId(),
 		type: "text",
@@ -40,7 +53,7 @@ export function createText(content: string, position?: Position): Node {
 	};
 }
 
-export function createComment(content: string, position?: Position): Node {
+function createComment(content: string, position?: Position): Node {
 	return {
 		id: allocateNodeId(),
 		type: "comment",
@@ -51,34 +64,56 @@ export function createComment(content: string, position?: Position): Node {
 	};
 }
 
-export function appendChild(parent: Node, child: Node): void {
+function appendChild(parent: Node, child: Node): void {
 	parent.children.push(child);
 }
 
-export function setAttribute(node: Node, key: string, value: string): void {
+function setAttribute(node: Node, key: string, value: string): void {
 	node.attributes.set(key, value);
 }
 
-export function getAttribute(node: Node, key: string): string | undefined {
+function getAttribute(node: Node, key: string): string | undefined {
 	return node.attributes.get(key);
 }
 
-export function hasAttribute(node: Node, key: string): boolean {
+function hasAttribute(node: Node, key: string): boolean {
 	return node.attributes.has(key);
 }
 
-export function removeAttribute(node: Node, key: string): void {
+function removeAttribute(node: Node, key: string): void {
 	node.attributes.delete(key);
 }
 
-export function isElement(node: Node): boolean {
+function isElement(node: Node): boolean {
 	return node.type === "element";
 }
 
-export function isText(node: Node): boolean {
+function isText(node: Node): boolean {
 	return node.type === "text";
 }
 
-export function isComment(node: Node): boolean {
+function isComment(node: Node): boolean {
 	return node.type === "comment";
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export {
+	appendChild,
+	createComment,
+	createElement,
+	createText,
+	getAttribute,
+	hasAttribute,
+	isComment,
+	isElement,
+	isText,
+	removeAttribute,
+	resetNodeIdCounter,
+	setAttribute,
+};
+
+// EOF

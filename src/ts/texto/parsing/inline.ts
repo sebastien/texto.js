@@ -1,4 +1,19 @@
-// Inline parsing engine
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/inline
+// Implements inline parsing orchestration, combining parser priority with nearest-match
+// selection so inline elements are emitted deterministically.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
+// Class: InlineParsingEngine
+// Resolves and applies inline parser matches over a bounded text range.
 
 import type { InlineParser } from "../parsers/inline/text.ts";
 import type { Cursor } from "../utils/cursor.ts";
@@ -6,17 +21,19 @@ import type { InlineMatch, Node } from "../utils/types.ts";
 import type { ParsingContext } from "./context.ts";
 import type { ParserRegistry } from "./registry.ts";
 
-export class InlineParsingEngine {
+class InlineParsingEngine {
 	private registry: ParserRegistry<InlineParser>;
 
 	constructor(registry: ParserRegistry<InlineParser>) {
 		this.registry = registry;
 	}
 
+	// Function: parseInlines
+	// Parses inline syntax in the active cursor range and appends children to `parent`.
 	parseInlines(
 		cursor: Cursor,
 		context: ParsingContext,
-		parent: Node,
+		_parent: Node,
 		endOffset: number,
 		baseOffset: number = 0,
 	): void {
@@ -164,3 +181,12 @@ export class InlineParsingEngine {
 			.trim();
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { InlineParsingEngine };
+
+// EOF

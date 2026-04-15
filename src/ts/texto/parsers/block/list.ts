@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/list
+// Implements the parsers/block/list module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // List block parser with recursive content parsing
 // Enhanced to parse nested blocks within list items
 
@@ -9,14 +22,14 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export interface ListParserOptions {
+interface ListParserOptions {
 	priority?: number;
 	stripContinuationIndent?: boolean;
 	orderedMarker?: ")" | "." | "both";
 	includeBoundaryBlankLine?: boolean;
 }
 
-export class ListParser extends BaseBlockParser {
+class ListParser extends BaseBlockParser {
 	private stripContinuationIndent: boolean;
 	private orderedMarker: ")" | "." | "both";
 	private includeBoundaryBlankLine: boolean;
@@ -629,3 +642,13 @@ export class ListParser extends BaseBlockParser {
 		return /\r?\n[ \t]*\r?\n/.test(content);
 	}
 }
+
+export type { ListParserOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ListParser };
+
+// EOF

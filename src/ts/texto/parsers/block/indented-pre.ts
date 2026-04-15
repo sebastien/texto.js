@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/indented-pre
+// Implements the parsers/block/indented-pre module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Indented preformatted block parser
 // Handles old-style preformatted blocks with >   prefix
 // Example:
@@ -12,7 +25,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class IndentedPreBlockParser extends BaseBlockParser {
+class IndentedPreBlockParser extends BaseBlockParser {
 	constructor() {
 		super("indented-pre", BLOCK_PRIORITIES.PRE);
 	}
@@ -240,3 +253,12 @@ export class IndentedPreBlockParser extends BaseBlockParser {
 		return count;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { IndentedPreBlockParser };
+
+// EOF

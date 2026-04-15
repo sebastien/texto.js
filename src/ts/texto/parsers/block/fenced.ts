@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/fenced
+// Implements the parsers/block/fenced module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Fenced block parser
 // Handles fenced code blocks delimited by triple backticks (```)
 // Examples:
@@ -20,7 +33,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class FencedBlockParser extends BaseBlockParser {
+class FencedBlockParser extends BaseBlockParser {
 	constructor() {
 		super("fenced", BLOCK_PRIORITIES.PRE);
 	}
@@ -324,3 +337,12 @@ export class FencedBlockParser extends BaseBlockParser {
 		return indent;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { FencedBlockParser };
+
+// EOF

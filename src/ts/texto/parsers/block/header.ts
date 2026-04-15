@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/header
+// Implements the parsers/block/header module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Header block parser for Markdown
 // Creates flat h1-h6 elements without section wrappers
 // Supports hash headings (# ## ###) and underline headings (=== ---)
@@ -9,7 +22,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class HeaderParser extends BaseBlockParser {
+class HeaderParser extends BaseBlockParser {
 	constructor() {
 		// Higher priority than SectionParser so it runs first for markdown
 		// SECTION priority is 25, so use 24
@@ -151,3 +164,12 @@ export class HeaderParser extends BaseBlockParser {
 		};
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { HeaderParser };
+
+// EOF

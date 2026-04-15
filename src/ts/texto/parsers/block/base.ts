@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/base
+// Implements the parsers/block/base module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Base BlockParser interface
 
 import type { BlockParsingEngine } from "../../parsing/block.ts";
@@ -5,7 +18,7 @@ import type { ParsingContext } from "../../parsing/context.ts";
 import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 
-export interface BlockParser {
+interface BlockParser {
 	readonly name: string;
 	readonly priority: number;
 
@@ -19,7 +32,7 @@ export interface BlockParser {
 	): BlockResult;
 }
 
-export abstract class BaseBlockParser implements BlockParser {
+abstract class BaseBlockParser implements BlockParser {
 	readonly name: string;
 	readonly priority: number;
 
@@ -56,3 +69,13 @@ export abstract class BaseBlockParser implements BlockParser {
 		return result;
 	}
 }
+
+export type { BlockParser };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { BaseBlockParser };
+
+// EOF

@@ -1,4 +1,19 @@
-// Main TextoParser class
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/texto
+// Defines the core parser orchestration that wires block parsers, inline parsers,
+// and pre-parse phases into a single Texto parsing pipeline.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
+// Class: TextoParser
+// Coordinates block parsing, inline parsing, and parser phases for one document pass.
 
 import { DocumentBuilder } from "./document/builder.ts";
 import { createElement, resetNodeIdCounter } from "./document/node.ts";
@@ -22,7 +37,14 @@ import { ParserRegistry } from "./parsing/registry.ts";
 import { Cursor } from "./utils/cursor.ts";
 import type { Document, Node } from "./utils/types.ts";
 
-export interface ParserOptions {
+// Type: ParserOptions
+// Configures a parser instance with custom parser sets and pre-parse phases.
+// - blockParsers: BlockParser[] | undefined - Additional block parsers to register.
+// - inlineParsers: InlineParser[] | undefined - Additional inline parsers to register.
+// - preParsePhases: PreParsePhase[] | undefined - Phases executed before block parsing.
+// - enableOffsets: boolean | undefined - Reserved flag for offset-based features.
+// - tabSize: number | undefined - Reserved tab width override.
+interface ParserOptions {
 	blockParsers?: BlockParser[];
 	inlineParsers?: InlineParser[];
 	/** Pre-parse phases to run before main parsing (e.g., reference collection) */
@@ -34,7 +56,7 @@ export interface ParserOptions {
 import type { BlockParser } from "./parsers/block/base.ts";
 import type { InlineParser } from "./parsers/inline/base.ts";
 
-export class TextoParser {
+class TextoParser {
 	private blockRegistry: ParserRegistry<BlockParser>;
 	private inlineRegistry: ParserRegistry<InlineParser>;
 	private defaultBlockParser: BlockParser;
@@ -105,6 +127,8 @@ export class TextoParser {
 		// Add more as implemented...
 	}
 
+	// Function: parse
+	// Parses `input` and returns a normalized document tree.
 	parse(input: string): Document {
 		resetNodeIdCounter(1);
 		// Create document position spanning the entire input
@@ -152,7 +176,8 @@ export class TextoParser {
 		return builder.getDocument();
 	}
 
-	// NEW: Parse blocks within a specific range (for recursive parsing)
+	// Function: parseBlocksInRange
+	// Parses blocks in [`startOffset`, `endOffset`) and appends nodes under `parentNode`.
 	parseBlocksInRange(
 		context: ParsingContext,
 		parentNode: Node,
@@ -242,6 +267,8 @@ export class TextoParser {
 		}
 	}
 
+	// Function: parseInlines
+	// Parses inline content in `text` and appends inline nodes under `parent`.
 	parseInlines(
 		text: string,
 		parent: Node,
@@ -292,8 +319,18 @@ export class TextoParser {
 }
 
 // Re-export types and classes
+
 export { DocumentBuilder } from "./document/builder.ts";
 export { ParsingContext } from "./parsing/context.ts";
 export { ParserRegistry } from "./parsing/registry.ts";
 export { Cursor } from "./utils/cursor.ts";
 export * from "./utils/types.ts";
+export type { ParserOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { TextoParser };
+
+// EOF

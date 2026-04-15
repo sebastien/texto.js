@@ -1,26 +1,25 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/server
+// Implements the server module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Texto Parser - Server/CLI Entry Point
 // Re-exports all browser-safe APIs plus Node.js-specific CLI functionality
 
 // Import CLI functionality
-import {
-	type FormatOptions,
-	formatCommand,
-	main,
-	type ParseOptions,
-	parseCommand,
-} from "./cli/index.ts";
+import { formatCommand, main, parseCommand } from "./cli/index.ts";
 
 // Re-export CLI functionality
-export {
-	type FormatOptions,
-	formatCommand,
-	main,
-	type ParseOptions,
-	parseCommand,
-};
 
 // Re-export all browser-safe APIs from core index
-export * from "./index.ts";
 
 // Run CLI when executed directly
 if (import.meta.main) {
@@ -29,4 +28,13 @@ if (import.meta.main) {
 		process.exit(2);
 	});
 }
+
+export * from "./index.ts";
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { formatCommand, main, parseCommand };
+
 // EOF

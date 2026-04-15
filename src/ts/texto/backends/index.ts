@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/backends/index
+// Registers output backends and exposes backend discovery and rendering helpers.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 import type { Document } from "../utils/types.ts";
 import { htmlBackend } from "./html.ts";
 import { jsonBackend } from "./json.ts";
@@ -10,13 +23,19 @@ const BACKENDS: Record<string, OutputBackend> = {
 	html: htmlBackend,
 };
 
-export type BackendFormat = keyof typeof BACKENDS;
+// Type: BackendFormat
+// Enumerates registered backend format keys in `BACKENDS`.
+type BackendFormat = keyof typeof BACKENDS;
 
-export function getAvailableBackends(): BackendFormat[] {
+// Function: getAvailableBackends
+// Returns the list of available backend format names.
+function getAvailableBackends(): BackendFormat[] {
 	return Object.keys(BACKENDS) as BackendFormat[];
 }
 
-export function renderBackend(
+// Function: renderBackend
+// Renders `doc` with the backend selected by `format` and optional `options`.
+function renderBackend(
 	doc: Document,
 	format: string,
 	options: BackendOptions = {},
@@ -34,5 +53,18 @@ export function renderBackend(
 	return backend(doc, options);
 }
 
-export type { BackendOptions, OutputBackend };
-export { htmlBackend, jsonBackend, xmlBackend };
+export type { BackendFormat, BackendOptions, OutputBackend };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export {
+	getAvailableBackends,
+	htmlBackend,
+	jsonBackend,
+	renderBackend,
+	xmlBackend,
+};
+
+// EOF

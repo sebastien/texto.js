@@ -1,8 +1,21 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/formatters/texto
+// Implements the formatters/texto module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Texto formatter - Convert AST back to texto format
 
 import type { Document, Node } from "../utils/types.ts";
 
-export function formatTexto(doc: Document): string {
+function formatTexto(doc: Document): string {
 	const parts: string[] = [];
 
 	// Header
@@ -449,3 +462,12 @@ function formatMarkup(node: Node): string {
 
 	return `<${tag}${attrStr} />`;
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { formatTexto };
+
+// EOF

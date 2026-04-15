@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/cli/format
+// Implements the cli/format module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // CLI format command - Parse and re-format to texto
 
 import { readFileSync } from "node:fs";
@@ -6,7 +19,7 @@ import { createMarkdownParser } from "../profiles/markdown.ts";
 import { createTextoParser } from "../profiles/texto.ts";
 import type { Document } from "../texto.ts";
 
-export interface FormatOptions {
+interface FormatOptions {
 	file?: string;
 	profile?: "texto" | "markdown" | "md" | "auto";
 }
@@ -29,7 +42,7 @@ function isJsonInput(input: string): boolean {
 	);
 }
 
-export async function formatCommand(options: FormatOptions): Promise<string> {
+async function formatCommand(options: FormatOptions): Promise<string> {
 	let input: string;
 
 	// Read input from file or stdin
@@ -81,3 +94,13 @@ export async function formatCommand(options: FormatOptions): Promise<string> {
 	// Re-format as texto
 	return formatTexto(doc);
 }
+
+export type { FormatOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { formatCommand };
+
+// EOF

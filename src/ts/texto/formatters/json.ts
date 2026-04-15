@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/formatters/json
+// Implements the formatters/json module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // JSON formatter - Convert AST to JSON output
 
 import type { Document, Node } from "../utils/types.ts";
@@ -6,7 +19,7 @@ interface JSONOptions {
 	includePositions?: boolean;
 }
 
-export function formatJSON(doc: Document, options: JSONOptions = {}): string {
+function formatJSON(doc: Document, options: JSONOptions = {}): string {
 	const obj = documentToObject(doc, options);
 	return JSON.stringify(obj, null, 2);
 }
@@ -67,10 +80,7 @@ function nodeToObject(node: Node, options: JSONOptions): unknown {
 }
 
 // Convenience function for one-off formatting
-export function toJSON(
-	node: Document | Node,
-	includePositions = false,
-): string {
+function toJSON(node: Document | Node, includePositions = false): string {
 	if (node.type === "document") {
 		return formatJSON(node as Document, { includePositions });
 	}
@@ -81,7 +91,7 @@ export function toJSON(
 	);
 }
 
-export function deserializeDocument(jsonString: string): Document {
+function deserializeDocument(jsonString: string): Document {
 	const obj = JSON.parse(jsonString);
 
 	function objectToNode(data: unknown): Node {
@@ -153,3 +163,12 @@ export function deserializeDocument(jsonString: string): Document {
 	}
 	return doc;
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { deserializeDocument, formatJSON, toJSON };
+
+// EOF

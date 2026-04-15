@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/text
+// Implements the parsers/inline/text module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Text inline parser (fallback)
 
 import type { ParsingContext } from "../../parsing/context.ts";
@@ -6,7 +19,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
-export class TextParser extends BaseInlineParser {
+class TextParser extends BaseInlineParser {
 	constructor() {
 		super("text", INLINE_PRIORITIES.TEXT);
 	}
@@ -40,3 +53,12 @@ export class TextParser extends BaseInlineParser {
 		return match.end;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { TextParser };
+
+// EOF

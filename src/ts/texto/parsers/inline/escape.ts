@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/escape
+// Implements the parsers/inline/escape module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Inline escape parser
 // Handles backslash escapes for special characters
 // \* \_ \` \[ \] \( \) \# \+ \- \. \!
@@ -31,7 +44,7 @@ const ESCAPABLE_CHARS = new Set([
 	">",
 ]);
 
-export class EscapeParser extends BaseInlineParser {
+class EscapeParser extends BaseInlineParser {
 	constructor() {
 		super("escape", INLINE_PRIORITIES.ESCAPED);
 	}
@@ -106,3 +119,12 @@ export class EscapeParser extends BaseInlineParser {
 		return match.end;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { EscapeParser };
+
+// EOF

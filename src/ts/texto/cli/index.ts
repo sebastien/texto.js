@@ -1,15 +1,22 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/cli/index
+// Exposes the cli module entry points.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // CLI index - Main entry point for texto command-line tool
 
 import { readFileSync, writeFileSync } from "node:fs";
-import {
-	args,
-	help,
-	type CLIArgs,
-	type CLIMeta,
-	type CLIParams,
-} from "../utils/cli.ts";
-import { formatCommand, type FormatOptions } from "./format.ts";
-import { parseCommand, type ParseOptions } from "./parse.ts";
+import { args, type CLIMeta, type CLIParams, help } from "../utils/cli.ts";
+import { type FormatOptions, formatCommand } from "./format.ts";
+import { type ParseOptions, parseCommand } from "./parse.ts";
 
 const version = "1.0.0";
 
@@ -239,7 +246,7 @@ async function handleParse(argsList: string[]): Promise<void> {
 	}
 
 	const file = a._positional?.[0] as string | undefined;
-	const input = await getInput(file);
+	const _input = await getInput(file);
 
 	const options: ParseOptions = {
 		file,
@@ -277,7 +284,7 @@ async function handleFormat(argsList: string[]): Promise<void> {
 	}
 
 	const file = a._positional?.[0] as string | undefined;
-	const input = await getInput(file);
+	const _input = await getInput(file);
 
 	const options: FormatOptions = {
 		file,
@@ -316,4 +323,11 @@ if (import.meta.main) {
 	});
 }
 
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
 export { formatCommand, main, parseCommand };
+
+// EOF

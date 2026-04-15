@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/utils/cli
+// Implements the utils/cli module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // File: utils/cli
 // SEE spec-XXX-utils_cli.md
 // Command-line argument parsing utilities
@@ -223,7 +236,18 @@ function* iargs(
 					continue;
 				}
 
-				const param = params[paramName]!;
+				const param = params[paramName];
+				if (!param) {
+					yield {
+						name: char,
+						index: i,
+						param: null,
+						code: "unknown",
+						message: `Unknown flag: "-${char}"`,
+						value: `-${char}`,
+					};
+					continue;
+				}
 				if (param.type === "boolean") {
 					result[paramName] = true;
 					provided.add(paramName);
@@ -263,7 +287,19 @@ function* iargs(
 			continue;
 		}
 
-		const param = params[paramName]!;
+		const param = params[paramName];
+		if (!param) {
+			yield {
+				name: flag.name,
+				index: i,
+				param: null,
+				code: "unknown",
+				message: `Unknown flag: "${flag.isLong ? "--" : "-"}${flag.name}"`,
+				value: arg,
+			};
+			i++;
+			continue;
+		}
 
 		// Handle negated boolean flags (--no-xxx)
 		if (flag.isNegated) {
@@ -287,7 +323,20 @@ function* iargs(
 		// Get the value
 		let value: string;
 		if (flag.hasValue) {
-			value = flag.value!;
+			const inlineValue = flag.value;
+			if (inlineValue === undefined) {
+				yield {
+					name: paramName,
+					index: i,
+					param,
+					code: "required",
+					message: `Flag "${flag.isLong ? "--" : "-"}${flag.name}" requires a value`,
+					value: arg,
+				};
+				i++;
+				continue;
+			}
+			value = inlineValue;
 		} else if (param.type === "attached" && !flag.isLong) {
 			// Attached type for short flags requires value attached to flag
 			yield {
@@ -559,5 +608,11 @@ export type {
 	CLIParams,
 	CLIParamType,
 };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
 export { args, help, iargs };
+
 // EOF

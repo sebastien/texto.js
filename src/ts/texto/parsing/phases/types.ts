@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/phases/types
+// Implements the parsing/phases/types module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Parsing phase interface for multi-phase document processing
 // Enables composable parsing stages like reference collection, TOC generation, etc.
 
@@ -8,7 +21,7 @@ import type { Node } from "../utils/types.ts";
  * Interface for a parsing phase.
  * Each phase can inspect and modify the document during a specific stage of parsing.
  */
-export interface ParsingPhase {
+interface ParsingPhase {
 	/** Unique identifier for this phase */
 	readonly name: string;
 
@@ -23,14 +36,14 @@ export interface ParsingPhase {
 		input: string,
 		context: ParsingContext,
 		document: Node,
-	): PhaseResult | void | Promise<PhaseResult | void>;
+	): PhaseResult | undefined | Promise<PhaseResult | undefined>;
 }
 
 /**
  * Result of a parsing phase execution.
  * Phases can return data to be used by subsequent phases.
  */
-export interface PhaseResult {
+interface PhaseResult {
 	/** Data to pass to subsequent phases */
 	data?: Map<string, unknown>;
 	/** Whether to continue to next phase */
@@ -43,7 +56,7 @@ export interface PhaseResult {
  * Phase that runs before main parsing.
  * Used for collecting metadata like reference definitions.
  */
-export interface PreParsePhase extends ParsingPhase {
+interface PreParsePhase extends ParsingPhase {
 	/** Runs before document structure is created */
 	readonly phaseType: "pre-parse";
 }
@@ -52,7 +65,7 @@ export interface PreParsePhase extends ParsingPhase {
  * Phase that runs during inline parsing.
  * Used for transforming inline content.
  */
-export interface InlinePhase extends ParsingPhase {
+interface InlinePhase extends ParsingPhase {
 	/** Runs during inline parsing */
 	readonly phaseType: "inline";
 }
@@ -61,7 +74,7 @@ export interface InlinePhase extends ParsingPhase {
  * Phase that runs after main parsing.
  * Used for post-processing like TOC generation.
  */
-export interface PostParsePhase extends ParsingPhase {
+interface PostParsePhase extends ParsingPhase {
 	/** Runs after document structure is complete */
 	readonly phaseType: "post-parse";
 }
@@ -69,20 +82,36 @@ export interface PostParsePhase extends ParsingPhase {
 /**
  * Type guard for pre-parse phases
  */
-export function isPreParsePhase(phase: ParsingPhase): phase is PreParsePhase {
+function isPreParsePhase(phase: ParsingPhase): phase is PreParsePhase {
 	return (phase as PreParsePhase).phaseType === "pre-parse";
 }
 
 /**
  * Type guard for inline phases
  */
-export function isInlinePhase(phase: ParsingPhase): phase is InlinePhase {
+function isInlinePhase(phase: ParsingPhase): phase is InlinePhase {
 	return (phase as InlinePhase).phaseType === "inline";
 }
 
 /**
  * Type guard for post-parse phases
  */
-export function isPostParsePhase(phase: ParsingPhase): phase is PostParsePhase {
+function isPostParsePhase(phase: ParsingPhase): phase is PostParsePhase {
 	return (phase as PostParsePhase).phaseType === "post-parse";
 }
+
+export type {
+	InlinePhase,
+	ParsingPhase,
+	PhaseResult,
+	PostParsePhase,
+	PreParsePhase,
+};
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { isInlinePhase, isPostParsePhase, isPreParsePhase };
+
+// EOF

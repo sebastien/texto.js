@@ -1,4 +1,19 @@
-// Block parsing engine
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/block
+// Implements block-level parsing orchestration, parser selection by priority, and
+// block boundary detection for recursive parsing contexts.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
+// Class: BlockParsingEngine
+// Selects and executes block parsers for the active parsing context.
 
 import type { BlockParser } from "../parsers/block/paragraph.ts";
 import type { Cursor } from "../utils/cursor.ts";
@@ -6,7 +21,7 @@ import type { BlockResult } from "../utils/types.ts";
 import type { ParsingContext } from "./context.ts";
 import type { ParserRegistry } from "./registry.ts";
 
-export class BlockParsingEngine {
+class BlockParsingEngine {
 	private registry: ParserRegistry<BlockParser>;
 	private defaultParser: BlockParser;
 
@@ -18,6 +33,8 @@ export class BlockParsingEngine {
 		this.defaultParser = defaultParser;
 	}
 
+	// Function: processBlock
+	// Processes one block starting at the cursor position in `context`.
 	processBlock(cursor: Cursor, context: ParsingContext): BlockResult {
 		const _startPos = cursor.pos;
 
@@ -69,6 +86,8 @@ export class BlockParsingEngine {
 	}
 
 	// NEW: Process block at current context offset (for recursive parsing)
+	// Function: processBlockAt
+	// Processes one block at the current context offset and returns consumed content.
 	processBlockAt(context: ParsingContext): BlockResult | null {
 		const text = context.getText();
 		const startOffset = context.getOffset();
@@ -443,3 +462,12 @@ export class BlockParsingEngine {
 		return true;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { BlockParsingEngine };
+
+// EOF

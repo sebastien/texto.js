@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/definition-list
+// Implements the parsers/block/definition-list module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Definition list block parser
 // Handles syntax: Term:: followed by indented definition
 
@@ -8,7 +21,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class DefinitionListParser extends BaseBlockParser {
+class DefinitionListParser extends BaseBlockParser {
 	constructor() {
 		super("definition-list", BLOCK_PRIORITIES.DEFINITION);
 	}
@@ -311,3 +324,12 @@ export class DefinitionListParser extends BaseBlockParser {
 		return indent;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { DefinitionListParser };
+
+// EOF

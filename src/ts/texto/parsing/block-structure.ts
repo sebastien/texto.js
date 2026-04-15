@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/block-structure
+// Implements the parsing/block-structure module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 import type { Document, Node } from "../utils/types.ts";
 
 function isContainerNode(node: Node): boolean {
@@ -36,7 +49,7 @@ function visitNode(
 	}
 }
 
-export function annotateBlockStructure(doc: Document): void {
+function annotateBlockStructure(doc: Document): void {
 	for (const rootNode of [
 		doc.header,
 		doc.content,
@@ -46,3 +59,12 @@ export function annotateBlockStructure(doc: Document): void {
 		visitNode(rootNode, 0, false);
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { annotateBlockStructure };
+
+// EOF

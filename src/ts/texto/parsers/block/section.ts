@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/section
+// Implements the parsers/block/section module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Section block parser
 
 import { createText } from "../../document/node.ts";
@@ -7,7 +20,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class SectionParser extends BaseBlockParser {
+class SectionParser extends BaseBlockParser {
 	constructor() {
 		super("section", BLOCK_PRIORITIES.SECTION);
 	}
@@ -287,3 +300,12 @@ export class SectionParser extends BaseBlockParser {
 		return depth;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { SectionParser };
+
+// EOF

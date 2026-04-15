@@ -1,9 +1,22 @@
-import { TextoParser } from "../texto.ts";
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/incremental
+// Implements the parsing/incremental module for texto parsing and formatting workflows.
+
+import type { Delta, DeltaOp } from "../delta.ts";
 import { DocumentBuilder } from "../document/builder.ts";
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
+import { TextoParser } from "../texto.ts";
+import type { AstPatch, Document, Node, TextEdit } from "../utils/types.ts";
 import { annotateBlockStructure } from "./block-structure.ts";
 import { ParsingContext } from "./context.ts";
-import type { Delta, DeltaOp } from "../delta.ts";
-import type { AstPatch, Document, Node, TextEdit } from "../utils/types.ts";
 
 const SECTION_ORDER = [
 	"header",
@@ -519,7 +532,7 @@ function walkNode(node: Node, visit: (node: Node) => void): void {
 	}
 }
 
-export function applyAstPatches(tree: Document, patches: AstPatch[]): void {
+function applyAstPatches(tree: Document, patches: AstPatch[]): void {
 	for (const patch of patches) {
 		switch (patch.type) {
 			case "UPDATE_OFFSETS": {
@@ -616,7 +629,7 @@ export function applyAstPatches(tree: Document, patches: AstPatch[]): void {
 	}
 }
 
-export class IncrementalParser {
+class IncrementalParser {
 	readonly parser: TextoParser;
 	source: string;
 	tree: Document;
@@ -649,6 +662,45 @@ export class IncrementalParser {
 		const nextSource = applyTextEdit(previousSource, edit);
 		const content = this.tree.content;
 		const region = resolveLocalRegion(content, previousSource, edit);
+		const editStart = edit.offset;
+		const editEnd = edit.offset + edit.length;
+		const regionCoversEdit =
+			region.oldStart <= editStart && region.oldEnd >= editEnd;
+		const leadingNode = content.children[region.startIndex];
+		const headingScopedSectionEdit =
+			region.oldCount === 1 &&
+			leadingNode?.type === "element" &&
+			leadingNode.name === "section" &&
+			editEnd <= region.oldEnd;
+		const offsetPatch = createOffsetPatch(edit, previousSource);
+
+		if (!regionCoversEdit || headingScopedSectionEdit) {
+			const nextTree = this.parser.parse(nextSource);
+			const patches: AstPatch[] = [offsetPatch];
+
+			for (let i = content.children.length - 1; i >= 0; i -= 1) {
+				patches.push({
+					type: "DELETE_NODE",
+					path: [1, i],
+					node: content.children[i],
+				});
+			}
+
+			for (let i = 0; i < nextTree.content.children.length; i += 1) {
+				patches.push({
+					type: "INSERT_NODE",
+					path: [1, i],
+					node: cloneNode(nextTree.content.children[i]),
+				});
+			}
+
+			this.source = nextSource;
+			this.tree = nextTree;
+			annotateBlockStructure(this.tree);
+
+			return patches;
+		}
+
 		const localStart = lineStart(nextSource, region.newStart);
 		const localEnd = lineEnd(nextSource, region.newEnd);
 		const reparsedNodes = parseRange(
@@ -657,7 +709,6 @@ export class IncrementalParser {
 			localStart,
 			localEnd,
 		);
-		const offsetPatch = createOffsetPatch(edit, previousSource);
 
 		const patches: AstPatch[] = [offsetPatch];
 		patches.push(
@@ -705,6 +756,15 @@ export class IncrementalParser {
 	}
 }
 
-export function init(source: string, parser?: TextoParser): IncrementalParser {
+function init(source: string, parser?: TextoParser): IncrementalParser {
 	return new IncrementalParser(source, parser);
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { applyAstPatches, IncrementalParser, init };
+
+// EOF

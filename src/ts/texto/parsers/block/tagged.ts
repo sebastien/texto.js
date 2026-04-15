@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/tagged
+// Implements the parsers/block/tagged module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Tagged block parser
 // Handles syntax: TagName followed by underscores, then content, then closing underscores
 // Example:
@@ -12,7 +25,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class TaggedBlockParser extends BaseBlockParser {
+class TaggedBlockParser extends BaseBlockParser {
 	constructor() {
 		super("tagged", BLOCK_PRIORITIES.TAGGED);
 	}
@@ -217,3 +230,12 @@ export class TaggedBlockParser extends BaseBlockParser {
 		return indent;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { TaggedBlockParser };
+
+// EOF

@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/phases/reference-collection
+// Implements the parsing/phases/reference-collection module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Pre-parse phase for collecting reference definitions
 // Scans the input text for [ref]: url patterns before main parsing
 
@@ -16,7 +29,7 @@ interface ReferenceDefinition {
  * Pre-parse phase that collects all reference definitions.
  * This allows references to be defined after they're used in the document.
  */
-export class ReferenceCollectionPhase implements PreParsePhase {
+class ReferenceCollectionPhase implements PreParsePhase {
 	readonly name = "reference-collection";
 	readonly phaseType = "pre-parse" as const;
 
@@ -107,7 +120,7 @@ export class ReferenceCollectionPhase implements PreParsePhase {
 
 		let url = "";
 		let title = "";
-		let consumedLines = 1;
+		let _consumedLines = 1;
 
 		// Extract URL (can be in angle brackets)
 		if (remaining.startsWith("<")) {
@@ -153,7 +166,7 @@ export class ReferenceCollectionPhase implements PreParsePhase {
 				const titleResult = this.extractTitle(nextTrimmed);
 				if (titleResult && !titleResult.remaining) {
 					title = titleResult.title;
-					consumedLines++;
+					_consumedLines++;
 				}
 			}
 		}
@@ -247,3 +260,12 @@ export class ReferenceCollectionPhase implements PreParsePhase {
 		return this.references.get(normalized);
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ReferenceCollectionPhase };
+
+// EOF

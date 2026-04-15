@@ -1,26 +1,39 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/document/tree
+// Implements the document/tree module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Tree navigation utilities
 
 import type { Node } from "./node.ts";
 
-export function getParent(_node: Node): Node | null {
+function getParent(_node: Node): Node | null {
 	// In this implementation, parent tracking is done externally
 	// via the builder's node stack
 	return null;
 }
 
-export function getChildren(node: Node): Node[] {
+function getChildren(node: Node): Node[] {
 	return node.children;
 }
 
-export function getFirstChild(node: Node): Node | null {
+function getFirstChild(node: Node): Node | null {
 	return node.children[0] || null;
 }
 
-export function getLastChild(node: Node): Node | null {
+function getLastChild(node: Node): Node | null {
 	return node.children[node.children.length - 1] || null;
 }
 
-export function findChild(
+function findChild(
 	node: Node,
 	predicate: (child: Node) => boolean,
 ): Node | null {
@@ -32,14 +45,11 @@ export function findChild(
 	return null;
 }
 
-export function findChildren(
-	node: Node,
-	predicate: (child: Node) => boolean,
-): Node[] {
+function findChildren(node: Node, predicate: (child: Node) => boolean): Node[] {
 	return node.children.filter(predicate);
 }
 
-export function findDescendants(node: Node, name: string): Node[] {
+function findDescendants(node: Node, name: string): Node[] {
 	const results: Node[] = [];
 
 	for (const child of node.children) {
@@ -52,9 +62,27 @@ export function findDescendants(node: Node, name: string): Node[] {
 	return results;
 }
 
-export function getElementsByName(node: Node, name: string): Node[] {
+function getElementsByName(node: Node, name: string): Node[] {
 	return findDescendants(node, name);
 }
 
 // Backwards compatibility alias
-export { getElementsByName as getElementsByTagName };
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export {
+	findChild,
+	findChildren,
+	findDescendants,
+	getChildren,
+	getElementsByName,
+	type getElementsByTagName,
+	getFirstChild,
+	getLastChild,
+	getParent,
+};
+
+// EOF

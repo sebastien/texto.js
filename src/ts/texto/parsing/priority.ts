@@ -1,13 +1,26 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/priority
+// Implements the parsing/priority module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Priority levels for parser ordering
 
-export const HIGHEST = 0;
-export const HIGH = 10;
-export const NORMAL = 20;
-export const LOW = 30;
-export const LOWEST = 40;
+const HIGHEST = 0;
+const HIGH = 10;
+const NORMAL = 20;
+const LOW = 30;
+const LOWEST = 40;
 
 // Default priority for block parsers (ordered by priority)
-export const BLOCK_PRIORITIES = {
+const BLOCK_PRIORITIES = {
 	COMMENT: 5, // Comments should be first
 	SEPARATOR: 8, // Content separators
 	TAGGED: 12, // Tagged blocks
@@ -23,7 +36,7 @@ export const BLOCK_PRIORITIES = {
 } as const;
 
 // Default priority for inline parsers
-export const INLINE_PRIORITIES = {
+const INLINE_PRIORITIES = {
 	ESCAPED: 5, // Escaped content
 	COMMENT: 8, // Inline comments
 	MARKUP: 10, // Custom markup
@@ -41,3 +54,20 @@ export const INLINE_PRIORITIES = {
 	ENTITY: 65, // &entities;
 	TEXT: 100, // Default/fallback
 } as const;
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export {
+	BLOCK_PRIORITIES,
+	HIGH,
+	HIGHEST,
+	INLINE_PRIORITIES,
+	LOW,
+	LOWEST,
+	NORMAL,
+};
+
+// EOF

@@ -1,15 +1,27 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/reference-definition
+// Implements the parsers/block/reference-definition module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Reference definition block parser
 // Handles [ref]: url "title" pattern for reference-style links
 // Stores definitions in context for link resolution
 
-import { createText } from "../../document/node.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { BLOCK_PRIORITIES } from "../../parsing/priority.ts";
 import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class ReferenceDefinitionParser extends BaseBlockParser {
+class ReferenceDefinitionParser extends BaseBlockParser {
 	constructor() {
 		super("reference-definition", BLOCK_PRIORITIES.REFERENCE); // 38
 	}
@@ -68,7 +80,7 @@ export class ReferenceDefinitionParser extends BaseBlockParser {
 		}
 
 		// Save position for URL parsing
-		const urlStart = cursor.pos;
+		const _urlStart = cursor.pos;
 		let url = "";
 
 		// Parse URL (can be in angle brackets or plain)
@@ -140,7 +152,7 @@ export class ReferenceDefinitionParser extends BaseBlockParser {
 		this.skipLeadingWhitespace(cursor);
 
 		// Skip URL
-		let url = (info.url as string) || "";
+		const url = (info.url as string) || "";
 		if (cursor.current() === "<") {
 			cursor.advance(); // <
 			cursor.advance(url.length);
@@ -251,3 +263,12 @@ export class ReferenceDefinitionParser extends BaseBlockParser {
 		};
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ReferenceDefinitionParser };
+
+// EOF

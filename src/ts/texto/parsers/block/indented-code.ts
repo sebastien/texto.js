@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/indented-code
+// Implements the parsers/block/indented-code module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Indented code block parser
 // Handles code blocks indented by 4 spaces or a tab
 // Collects consecutive indented lines
@@ -9,7 +22,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class IndentedCodeParser extends BaseBlockParser {
+class IndentedCodeParser extends BaseBlockParser {
 	constructor() {
 		super("indented-code", BLOCK_PRIORITIES.PRE + 2); // 20, after fenced code
 	}
@@ -175,3 +188,12 @@ export class IndentedCodeParser extends BaseBlockParser {
 		return result;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { IndentedCodeParser };
+
+// EOF

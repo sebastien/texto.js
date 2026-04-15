@@ -1,6 +1,19 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/utils/types
+// Implements the utils/types module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Core types and interfaces for Texto parser
 
-export interface Position {
+interface Position {
 	start: number;
 	end: number;
 	line: number;
@@ -8,7 +21,7 @@ export interface Position {
 	block?: number;
 }
 
-export interface Node {
+interface Node {
 	id: number;
 	type: "element" | "text" | "comment";
 	name?: string;
@@ -18,7 +31,7 @@ export interface Node {
 	position?: Position;
 }
 
-export interface Document {
+interface Document {
 	type: "document";
 	header: Node;
 	content: Node;
@@ -26,44 +39,44 @@ export interface Document {
 	appendices: Node;
 }
 
-export interface RecognitionInfo {
+interface RecognitionInfo {
 	type: string;
 	[key: string]: unknown;
 }
 
-export interface BlockResult {
+interface BlockResult {
 	consumed: number;
 	node?: Node;
 }
 
-export interface InlineMatch {
+interface InlineMatch {
 	start: number;
 	end: number;
 	content: string;
 	[key: string]: unknown;
 }
 
-export interface ParserState {
+interface ParserState {
 	bufferOffset: number;
 	lineNumber: number;
 	columnNumber: number;
 }
 
-export interface ParseError {
+interface ParseError {
 	message: string;
 	position: Position;
 	severity: "error" | "warning";
 }
 
-export interface TextEdit {
+interface TextEdit {
 	offset: number;
 	length: number;
 	text: string;
 }
 
-export type NodePath = number[];
+type NodePath = number[];
 
-export type AstPatch =
+type AstPatch =
 	| {
 			type: "UPDATE_OFFSETS";
 			startOffset: number;
@@ -99,12 +112,34 @@ export type AstPatch =
 			value: string | null;
 	  };
 
-export const TAB_SIZE = 4;
+const TAB_SIZE = 4;
 
-export enum Priority {
+enum Priority {
 	HIGHEST = 0,
 	HIGH = 10,
 	NORMAL = 20,
 	LOW = 30,
 	LOWEST = 40,
 }
+
+export type {
+	AstPatch,
+	BlockResult,
+	Document,
+	InlineMatch,
+	Node,
+	NodePath,
+	ParseError,
+	ParserState,
+	Position,
+	RecognitionInfo,
+	TextEdit,
+};
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { Priority, TAB_SIZE };
+
+// EOF

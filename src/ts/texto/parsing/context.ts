@@ -1,3 +1,17 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/context
+// Provides mutable parser state for block and inline parsing, including cursor offsets,
+// section tracking, collected links, targets, and parser diagnostics.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Parsing context for managing parser state
 // Enhanced with offset management for recursive block parsing
 
@@ -7,18 +21,34 @@ import { Cursor } from "../utils/cursor.ts";
 import { expandTabs, getIndent, removeLeadingSpaces } from "../utils/indent.ts";
 import type { Node, ParseError } from "../utils/types.ts";
 
-export interface LinkEntry {
+// Type: LinkEntry
+// Stores a link node and its resolution target.
+// - node: Node - Link node in the document tree.
+// - target: string - Raw or resolved link target.
+// - type: "url" | "ref" - Direct URL link or reference-style link.
+interface LinkEntry {
 	node: Node;
 	target: string;
 	type: "url" | "ref";
 }
 
-export interface TargetEntry {
+// Type: TargetEntry
+// Stores a target node addressable by name.
+// - node: Node - Target node in the document tree.
+// - name: string - Normalized target identifier.
+interface TargetEntry {
 	node: Node;
 	name: string;
 }
 
-export interface OffsetState {
+// Type: OffsetState
+// Captures parser offset and block-boundary state for save/restore operations.
+// - offset: number - Absolute text offset.
+// - blockStart: number - Current block start offset.
+// - blockEnd: number - Current block end offset.
+// - lineNumber: number - Current 1-based line number.
+// - columnNumber: number - Current 0-based column number.
+interface OffsetState {
 	offset: number;
 	blockStart: number;
 	blockEnd: number;
@@ -26,7 +56,9 @@ export interface OffsetState {
 	columnNumber: number;
 }
 
-export class ParsingContext {
+// Class: ParsingContext
+// Holds mutable state shared by block parsers, inline parsers, and parsing phases.
+class ParsingContext {
 	builder: DocumentBuilder;
 	parser: TextoParser | null = null;
 	links: LinkEntry[] = [];
@@ -322,3 +354,13 @@ export class ParsingContext {
 		return clone;
 	}
 }
+
+export type { LinkEntry, OffsetState, TargetEntry };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ParsingContext };
+
+// EOF

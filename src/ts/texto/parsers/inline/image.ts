@@ -1,15 +1,27 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/image
+// Implements the parsers/inline/image module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Inline image parser
 // Handles ![alt](url) and ![alt][ref] patterns
 // Similar to link parser but produces img elements
 
-import { createText } from "../../document/node.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { INLINE_PRIORITIES } from "../../parsing/priority.ts";
 import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
-export class ImageParser extends BaseInlineParser {
+class ImageParser extends BaseInlineParser {
 	constructor() {
 		super("image", INLINE_PRIORITIES.LINK); // Same priority as links
 	}
@@ -50,7 +62,7 @@ export class ImageParser extends BaseInlineParser {
 					continue;
 				}
 
-				const endAltBracket = pos - 1;
+				const _endAltBracket = pos - 1;
 
 				// Check what follows: ( for inline, [ for reference
 				if (pos < textLength && text[pos] === "(") {
@@ -227,3 +239,12 @@ export class ImageParser extends BaseInlineParser {
 		return match.end;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ImageParser };
+
+// EOF

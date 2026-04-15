@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/phases/registry
+// Implements the parsing/phases/registry module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Phase registry for managing parsing phases
 // Enables composition of pre-parse, inline, and post-parse phases
 
@@ -11,7 +24,7 @@ import type {
 /**
  * Registry for managing and executing parsing phases.
  */
-export class PhaseRegistry {
+class PhaseRegistry {
 	private preParsePhases: PreParsePhase[] = [];
 	private inlinePhases: InlinePhase[] = [];
 	private postParsePhases: PostParsePhase[] = [];
@@ -83,3 +96,12 @@ export class PhaseRegistry {
 		this.postParsePhases = [];
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { PhaseRegistry };
+
+// EOF

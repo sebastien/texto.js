@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/blockquote
+// Implements the parsers/block/blockquote module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Blockquote block parser
 // Handles lines prefixed with > character
 // Supports nested blockquotes and multi-line content
@@ -14,7 +27,7 @@ interface BlockquoteLine {
 	level: number; // Number of > markers
 }
 
-export class BlockquoteParser extends BaseBlockParser {
+class BlockquoteParser extends BaseBlockParser {
 	constructor() {
 		super("blockquote", BLOCK_PRIORITIES.TABLE + 1); // 28, after tables
 	}
@@ -226,9 +239,9 @@ export class BlockquoteParser extends BaseBlockParser {
 		_engine: BlockParsingEngine | undefined,
 		startOffset: number,
 	): void {
-		let currentLevel = 1;
+		const currentLevel = 1;
 		let currentLines: string[] = [];
-		let currentOffset = startOffset;
+		const currentOffset = startOffset;
 
 		for (let i = 0; i < lines.length; i++) {
 			const line = lines[i];
@@ -407,7 +420,7 @@ export class BlockquoteParser extends BaseBlockParser {
 	 */
 	private createParagraph(
 		content: string,
-		parentNode: Node,
+		_parentNode: Node,
 		context: ParsingContext,
 	): void {
 		if (!content.trim()) return;
@@ -440,12 +453,13 @@ export class BlockquoteParser extends BaseBlockParser {
 		}
 		return text.slice(offset, end);
 	}
-
-	private findNextLineStart(text: string, offset: number): number {
-		const newline = text.indexOf("\n", offset);
-		if (newline === -1) {
-			return text.length;
-		}
-		return newline + 1;
-	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { BlockquoteParser };
+
+// EOF

@@ -1,8 +1,21 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/utils/cursor
+// Implements the utils/cursor module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Character cursor for navigation through input
 
 import type { Position } from "./types.ts";
 
-export class Cursor {
+class Cursor {
 	private buffer: string;
 	private _position: number;
 	private _line: number;
@@ -233,3 +246,12 @@ export class Cursor {
 		return clone;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { Cursor };
+
+// EOF

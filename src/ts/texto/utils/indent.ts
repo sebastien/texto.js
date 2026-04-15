@@ -1,8 +1,21 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/utils/indent
+// Implements the utils/indent module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Indentation and tab handling
 
 import { TAB_SIZE } from "./types.ts";
 
-export function getIndent(text: string, tabSize: number = TAB_SIZE): number {
+function getIndent(text: string, tabSize: number = TAB_SIZE): number {
 	const lines = text.split("\n").filter((line) => line.length > 0);
 	if (lines.length === 0) return 0;
 	if (lines.length === 1) return countLeadingSpaces(lines[0], tabSize);
@@ -11,10 +24,7 @@ export function getIndent(text: string, tabSize: number = TAB_SIZE): number {
 	return Math.min(...indents);
 }
 
-export function countLeadingSpaces(
-	text: string,
-	tabSize: number = TAB_SIZE,
-): number {
+function countLeadingSpaces(text: string, tabSize: number = TAB_SIZE): number {
 	let count = 0;
 	for (const char of text) {
 		if (char === "\t") {
@@ -28,7 +38,7 @@ export function countLeadingSpaces(
 	return count;
 }
 
-export function removeLeadingSpaces(text: string, maximum?: number): string {
+function removeLeadingSpaces(text: string, maximum?: number): string {
 	let count = 0;
 	let i = 0;
 
@@ -50,7 +60,7 @@ export function removeLeadingSpaces(text: string, maximum?: number): string {
 	return text.slice(i);
 }
 
-export function expandTabs(text: string, tabSize: number = TAB_SIZE): string {
+function expandTabs(text: string, tabSize: number = TAB_SIZE): string {
 	let result = "";
 	let col = 0;
 
@@ -71,7 +81,7 @@ export function expandTabs(text: string, tabSize: number = TAB_SIZE): string {
 	return result;
 }
 
-export function matchesIndent(
+function matchesIndent(
 	line: string,
 	indent: number,
 	tabSize: number = TAB_SIZE,
@@ -79,3 +89,18 @@ export function matchesIndent(
 	const lineIndent = countLeadingSpaces(line, tabSize);
 	return lineIndent >= indent;
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export {
+	countLeadingSpaces,
+	expandTabs,
+	getIndent,
+	matchesIndent,
+	removeLeadingSpaces,
+};
+
+// EOF

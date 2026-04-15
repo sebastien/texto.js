@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsing/registry
+// Implements the parsing/registry module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Parser registry with priority-based ordering
 
 interface NamedParser {
@@ -5,7 +18,7 @@ interface NamedParser {
 	priority: number;
 }
 
-export class ParserRegistry<T extends NamedParser> {
+class ParserRegistry<T extends NamedParser> {
 	private parsers: Map<string, T> = new Map();
 	private order: { name: string; priority: number }[] = [];
 
@@ -46,3 +59,12 @@ export class ParserRegistry<T extends NamedParser> {
 		this.order = [];
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ParserRegistry };
+
+// EOF

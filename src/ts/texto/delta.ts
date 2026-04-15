@@ -1,22 +1,35 @@
-export interface RetainOp {
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/delta
+// Implements the delta module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
+interface RetainOp {
 	retain: number;
 }
 
-export interface InsertOp {
+interface InsertOp {
 	insert: string;
 }
 
-export interface DeleteOp {
+interface DeleteOp {
 	delete: number;
 }
 
-export type DeltaOp = RetainOp | InsertOp | DeleteOp;
-export type Delta = DeltaOp[];
+type DeltaOp = RetainOp | InsertOp | DeleteOp;
+type Delta = DeltaOp[];
 
-export type DiffChange = [operation: number, text: string];
-export type DiffEngine = (oldtext: string, newtext: string) => DiffChange[];
+type DiffChange = [operation: number, text: string];
+type DiffEngine = (oldtext: string, newtext: string) => DiffChange[];
 
-export interface ApplyResult {
+interface ApplyResult {
 	text: string;
 	range: [number, number];
 }
@@ -73,7 +86,7 @@ const hasRangeHints = (start?: number, end?: number): start is number => {
 
 let diffEngine: DiffEngine | null = null;
 
-export const setDiffEngine = (engine: DiffEngine | null): void => {
+const setDiffEngine = (engine: DiffEngine | null): void => {
 	diffEngine = engine;
 };
 
@@ -98,7 +111,7 @@ const applyDiffChanges = (ops: Delta, changes: DiffChange[]): void => {
 	}
 };
 
-export const delta = (
+const delta = (
 	oldtext: string,
 	newtext: string,
 	start?: number,
@@ -169,7 +182,7 @@ export const delta = (
 	return ops;
 };
 
-export const apply = (text: string, patches: Delta): ApplyResult => {
+const apply = (text: string, patches: Delta): ApplyResult => {
 	let sourceCursor = 0;
 	let outputCursor = 0;
 	let rangeMin = Number.POSITIVE_INFINITY;
@@ -221,11 +234,7 @@ export const apply = (text: string, patches: Delta): ApplyResult => {
 	return { text: out.join(""), range: [rangeMin, rangeMax] };
 };
 
-export const revert = (
-	oldtext: string,
-	newtext: string,
-	patches?: Delta,
-): Delta => {
+const revert = (oldtext: string, newtext: string, patches?: Delta): Delta => {
 	if (!patches) {
 		return delta(newtext, oldtext);
 	}
@@ -252,3 +261,22 @@ export const revert = (
 
 	return inverse;
 };
+
+export type {
+	ApplyResult,
+	DeleteOp,
+	Delta,
+	DeltaOp,
+	DiffChange,
+	DiffEngine,
+	InsertOp,
+	RetainOp,
+};
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { apply, delta, revert, setDiffEngine };
+
+// EOF

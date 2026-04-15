@@ -1,12 +1,25 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/cli/parse
+// Implements the cli/parse module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // CLI parse command - Parse texto to backend output
 
 import { readFileSync } from "node:fs";
 import { renderBackend } from "../backends/index.ts";
 import { createMarkdownParser } from "../profiles/markdown.ts";
 import { createTextoParser } from "../profiles/texto.ts";
-import { TextoParser } from "../texto.ts";
+import type { TextoParser } from "../texto.ts";
 
-export interface ParseOptions {
+interface ParseOptions {
 	file?: string;
 	profile?: "texto" | "markdown" | "md" | "auto";
 	format?: "json" | "xml" | "html" | string;
@@ -35,13 +48,12 @@ function createParser(profile: "texto" | "markdown"): TextoParser {
 		case "markdown":
 		case "md":
 			return createMarkdownParser();
-		case "texto":
 		default:
 			return createTextoParser();
 	}
 }
 
-export async function parseCommand(options: ParseOptions): Promise<string> {
+async function parseCommand(options: ParseOptions): Promise<string> {
 	let input: string;
 
 	// Read input from file or stdin
@@ -81,3 +93,13 @@ export async function parseCommand(options: ParseOptions): Promise<string> {
 		includePositions: options.includePositions,
 	});
 }
+
+export type { ParseOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { parseCommand };
+
+// EOF

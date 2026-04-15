@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/link
+// Implements the parsers/inline/link module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Inline link parser
 // Handles [text](url), [text](url "title"), [text][ref], and [ref] patterns
 
@@ -8,7 +21,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch, Node } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
-export class LinkParser extends BaseInlineParser {
+class LinkParser extends BaseInlineParser {
 	constructor() {
 		super("link", INLINE_PRIORITIES.LINK);
 	}
@@ -58,7 +71,7 @@ export class LinkParser extends BaseInlineParser {
 					continue;
 				}
 
-				const endTextBracket = pos - 1;
+				const _endTextBracket = pos - 1;
 
 				// Check what follows: ( for inline, [ or space+[ for reference, or nothing for collapsed reference
 				if (pos < textLength && text[pos] === "(") {
@@ -201,7 +214,7 @@ export class LinkParser extends BaseInlineParser {
 
 	parse(cursor: Cursor, context: ParsingContext, match: InlineMatch): number {
 		const currentPos = cursor.getPosition();
-		const text = cursor.text;
+		const _text = cursor.text;
 
 		// Create link node
 		const node = context.builder.createAndAppend(
@@ -272,7 +285,7 @@ export class LinkParser extends BaseInlineParser {
 	private addLinkText(
 		node: Node,
 		content: string,
-		context: ParsingContext,
+		_context: ParsingContext,
 		baseOffset: number,
 	): void {
 		if (content) {
@@ -339,3 +352,12 @@ export class LinkParser extends BaseInlineParser {
 		};
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { LinkParser };
+
+// EOF

@@ -1,13 +1,25 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/paragraph
+// Implements the parsers/block/paragraph module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Paragraph block parser (default fallback)
 
-import { createText } from "../../document/node.ts";
 import type { ParsingContext } from "../../parsing/context.ts";
 import { BLOCK_PRIORITIES } from "../../parsing/priority.ts";
 import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, Node, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class ParagraphParser extends BaseBlockParser {
+class ParagraphParser extends BaseBlockParser {
 	constructor() {
 		super("paragraph", BLOCK_PRIORITIES.PARAGRAPH);
 	}
@@ -179,7 +191,7 @@ export class ParagraphParser extends BaseBlockParser {
 				if (i > 0) {
 					// Check if previous line ended with 2+ spaces (hard line break)
 					const prevLine = lines[i - 1];
-					if (/  \s*$/.test(prevLine)) {
+					if (/ {2}\s*$/.test(prevLine)) {
 						// Hard line break - insert special marker
 						content += "\n"; // Use newline as marker for hard break
 						hasHardBreaks = true;
@@ -317,3 +329,12 @@ export class ParagraphParser extends BaseBlockParser {
 		return text.slice(offset, end);
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { ParagraphParser };
+
+// EOF

@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/backends/xml
+// Implements the backends/xml module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 import type { Document, Node } from "../utils/types.ts";
 import type { BackendOptions, OutputBackend } from "./types.ts";
 
@@ -67,7 +80,7 @@ function nodeToXML(
 	return lines.join("\n");
 }
 
-export const xmlBackend: OutputBackend = (
+const xmlBackend: OutputBackend = (
 	doc: Document,
 	options: BackendOptions = {},
 ): string => {
@@ -89,3 +102,12 @@ export const xmlBackend: OutputBackend = (
 	lines.push("</ast>");
 	return lines.join("\n");
 };
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { xmlBackend };
+
+// EOF

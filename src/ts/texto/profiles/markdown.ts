@@ -1,56 +1,58 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/profiles/markdown
+// Provides a markdown profile that assembles block and inline parsers tuned for
+// CommonMark-style authoring with optional extensions.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Markdown parser profile
 // Configures a TextoParser for standard Markdown parsing
 
-import { MarkdownParser } from "../parsers/markdown-parser.ts";
+import type { BlockParser } from "../parsers/block/base.ts";
+import { BlockquoteParser } from "../parsers/block/blockquote.ts";
 import { FencedBlockParser } from "../parsers/block/fenced.ts";
 import { HeaderParser } from "../parsers/block/header.ts";
+import { HorizontalRuleParser } from "../parsers/block/horizontal-rule.ts";
+import { IndentedCodeParser } from "../parsers/block/indented-code.ts";
 import { ListParser } from "../parsers/block/list.ts";
 import { ParagraphParser } from "../parsers/block/paragraph.ts";
-import { BlockquoteParser } from "../parsers/block/blockquote.ts";
-import { IndentedCodeParser } from "../parsers/block/indented-code.ts";
-import { HorizontalRuleParser } from "../parsers/block/horizontal-rule.ts";
 import { ReferenceDefinitionParser } from "../parsers/block/reference-definition.ts";
-import { EmphasisParser } from "../parsers/inline/emphasis.ts";
-import { CodeParser } from "../parsers/inline/code.ts";
-import { LinkParser } from "../parsers/inline/link.ts";
-import { ImageParser } from "../parsers/inline/image.ts";
-import { EscapeParser } from "../parsers/inline/escape.ts";
-import { TextParser } from "../parsers/inline/text.ts";
-import type { BlockParser } from "../parsers/block/base.ts";
 import type { InlineParser } from "../parsers/inline/base.ts";
+import { CodeParser } from "../parsers/inline/code.ts";
+import { EmphasisParser } from "../parsers/inline/emphasis.ts";
+import { EscapeParser } from "../parsers/inline/escape.ts";
+import { ImageParser } from "../parsers/inline/image.ts";
+import { LinkParser } from "../parsers/inline/link.ts";
+import { TextParser } from "../parsers/inline/text.ts";
+import { MarkdownParser } from "../parsers/markdown-parser.ts";
 
-/**
- * Options for configuring the Markdown parser profile.
- */
-export interface MarkdownProfileOptions {
-	/** Additional block parsers to include */
+// Type: MarkdownProfileOptions
+// Configures optional parser additions and markdown profile features.
+// - extraBlockParsers: BlockParser[] | undefined - Extra block parsers appended to defaults.
+// - extraInlineParsers: InlineParser[] | undefined - Extra inline parsers appended to defaults.
+// - enableFencedCode: boolean | undefined - Enables fenced-code parsing when not false.
+interface MarkdownProfileOptions {
 	extraBlockParsers?: BlockParser[];
-	/** Additional inline parsers to include */
 	extraInlineParsers?: InlineParser[];
-	/** Whether to enable fenced code blocks (```). Defaults to true. */
 	enableFencedCode?: boolean;
 }
 
-/**
- * Creates a Markdown parser with full support for standard Markdown syntax.
- *
- * Features:
- * - Headers (hash # and underline === ---)
- * - Blockquotes (>)
- * - Lists (ordered 1. and unordered - *)
- * - Code blocks (indented 4 spaces and fenced ```)
- * - Horizontal rules (--- *** ___)
- * - Links ([text](url) and [text][ref] with definitions)
- * - Images (![alt](url) and ![alt][ref])
- * - Emphasis (*italic* and **bold**)
- * - Inline code (`code`)
- * - Backslash escapes (\* \_ \` etc.)
- * - Reference definitions ([ref]: url "title")
- *
- * @param options - Configuration options for the Markdown parser
- * @returns A configured MarkdownParser instance for Markdown
- */
-export function createMarkdownParser(
+// Function: createMarkdownParser
+// Factory that returns a `MarkdownParser` using the markdown profile and `options`.
+//
+// Example:
+// ```typescript
+// const parser = createMarkdownParser({ enableFencedCode: true });
+// const doc = parser.parse("# Hello\n\nParagraph");
+// ```
+function createMarkdownParser(
 	options: MarkdownProfileOptions = {},
 ): MarkdownParser {
 	// Block parsers in priority order (lower number = higher priority)
@@ -99,3 +101,13 @@ export function createMarkdownParser(
 
 	return new MarkdownParser({ blockParsers, inlineParsers });
 }
+
+export type { MarkdownProfileOptions };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { createMarkdownParser };
+
+// EOF

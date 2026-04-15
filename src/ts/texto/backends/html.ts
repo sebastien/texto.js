@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/backends/html
+// Implements the backends/html module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 import type { Document, Node } from "../utils/types.ts";
 import type { OutputBackend } from "./types.ts";
 
@@ -222,7 +235,7 @@ function renderNode(node: Node): string {
 	}
 }
 
-export const htmlBackend: OutputBackend = (doc: Document): string => {
+const htmlBackend: OutputBackend = (doc: Document): string => {
 	const titleNode = doc.header.children.find(
 		(child) => child.type === "element" && child.name === "title",
 	);
@@ -242,3 +255,12 @@ export const htmlBackend: OutputBackend = (doc: Document): string => {
 		"</html>",
 	].join("\n");
 };
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { htmlBackend };
+
+// EOF

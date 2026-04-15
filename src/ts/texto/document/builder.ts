@@ -1,16 +1,29 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/document/builder
+// Implements the document/builder module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Document tree builder with section tracking
 
 import type { Document, Node, Position } from "../utils/types.ts";
 import { appendChild, createElement, createText } from "./node.ts";
 
-export interface SectionEntry {
+interface SectionEntry {
 	node: Node;
 	content: Node;
 	depth: number;
 	indent: number;
 }
 
-export class DocumentBuilder {
+class DocumentBuilder {
 	private document: Document;
 	private stack: Node[];
 	private sections: SectionEntry[];
@@ -202,3 +215,13 @@ export class DocumentBuilder {
 		}
 	}
 }
+
+export type { SectionEntry };
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { DocumentBuilder };
+
+// EOF

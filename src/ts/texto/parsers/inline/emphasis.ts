@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/inline/emphasis
+// Implements the parsers/inline/emphasis module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Emphasis and strong inline parser
 // Supports both *asterisk* and _underscore_ style emphasis
 
@@ -8,27 +21,27 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
-export class EmphasisParser extends BaseInlineParser {
+class EmphasisParser extends BaseInlineParser {
 	constructor() {
 		super("emphasis", INLINE_PRIORITIES.EMPHASIS);
 	}
 
 	findNext(cursor: Cursor, _context: ParsingContext): InlineMatch | null {
 		const text = cursor.text;
-		const textLength = text.length;
-		let pos = cursor.pos;
+		const _textLength = text.length;
+		const pos = cursor.pos;
 
 		// Find the next emphasis marker (* or _) with the smallest start position
 		let bestMatch: InlineMatch | null = null;
 		let bestStart = Infinity;
 
 		// Check for **strong** or __strong__
-		let strongAsterisk = text.indexOf("**", pos);
-		let strongUnderscore = text.indexOf("__", pos);
+		const strongAsterisk = text.indexOf("**", pos);
+		const strongUnderscore = text.indexOf("__", pos);
 
 		// Check for *emphasis* or _emphasis_
-		let emAsterisk = text.indexOf("*", pos);
-		let emUnderscore = text.indexOf("_", pos);
+		const emAsterisk = text.indexOf("*", pos);
+		const emUnderscore = text.indexOf("_", pos);
 
 		// Find **strong** (check if there's a closing **)
 		if (strongAsterisk !== -1) {
@@ -141,3 +154,12 @@ export class EmphasisParser extends BaseInlineParser {
 		return match.end;
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { EmphasisParser };
+
+// EOF

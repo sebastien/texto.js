@@ -1,3 +1,16 @@
+// Project: texto.js
+// Author:  Sebastien Pierre
+// License: MIT
+// Created: 2026-04-15
+
+// Module: texto/parsers/block/horizontal-rule
+// Implements the parsers/block/horizontal-rule module for texto parsing and formatting workflows.
+
+// ----------------------------------------------------------------------------
+//
+// IMPLEMENTATION
+//
+// ----------------------------------------------------------------------------
 // Horizontal rule block parser
 // Recognizes ---, ***, or ___ on their own line
 // Allows optional spaces between markers
@@ -8,7 +21,7 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { BlockResult, RecognitionInfo } from "../../utils/types.ts";
 import { BaseBlockParser } from "./base.ts";
 
-export class HorizontalRuleParser extends BaseBlockParser {
+class HorizontalRuleParser extends BaseBlockParser {
 	constructor() {
 		super("horizontal-rule", BLOCK_PRIORITIES.SEPARATOR + 2); // 10, early recognition
 	}
@@ -103,3 +116,12 @@ export class HorizontalRuleParser extends BaseBlockParser {
 		};
 	}
 }
+
+// ----------------------------------------------------------------------------
+//
+// EXPORTS
+//
+// ----------------------------------------------------------------------------
+export { HorizontalRuleParser };
+
+// EOF
