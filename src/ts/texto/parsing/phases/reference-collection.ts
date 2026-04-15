@@ -74,7 +74,7 @@ class ReferenceCollectionPhase implements PreParsePhase {
 					codeBlockFence = fence;
 				} else if (trimmed.startsWith(codeBlockFence)) {
 					inCodeBlock = false;
-					codeBlockBlockFence = "";
+					codeBlockFence = "";
 				}
 				continue;
 			}

@@ -21,16 +21,20 @@ import { DefinitionListParser } from "./parsers/block/definition-list.ts";
 import { FencedBlockParser } from "./parsers/block/fenced.ts";
 import { IndentedPreBlockParser } from "./parsers/block/indented-pre.ts";
 import { ListParser } from "./parsers/block/list.ts";
+import { ReferenceDefinitionParser } from "./parsers/block/reference-definition.ts";
 // Block parsers
 import { ParagraphParser } from "./parsers/block/paragraph.ts";
 import { SectionParser } from "./parsers/block/section.ts";
 import { TaggedBlockParser } from "./parsers/block/tagged.ts";
 // Inline parsers
+import { CodeParser } from "./parsers/inline/code.ts";
 import { EmphasisParser } from "./parsers/inline/emphasis.ts";
+import { LinkParser } from "./parsers/inline/link.ts";
 import { BlockParsingEngine } from "./parsing/block.ts";
 import { annotateBlockStructure } from "./parsing/block-structure.ts";
 import { ParsingContext } from "./parsing/context.ts";
 import { InlineParsingEngine } from "./parsing/inline.ts";
+import { ReferenceCollectionPhase } from "./parsing/phases/reference-collection.ts";
 import { PhaseRegistry } from "./parsing/phases/registry.ts";
 import type { PreParsePhase } from "./parsing/phases/types.ts";
 import { ParserRegistry } from "./parsing/registry.ts";
@@ -76,6 +80,7 @@ class TextoParser {
 
 		// Register default parsers
 		this.registerDefaultParsers();
+		this.phaseRegistry.register(new ReferenceCollectionPhase());
 
 		// Register phases from options
 		if (options.preParsePhases) {
@@ -112,6 +117,7 @@ class TextoParser {
 		this.blockRegistry.register(new IndentedPreBlockParser(), 19); // Old-style indented pre blocks
 		this.blockRegistry.register(new SectionParser(), 25);
 		this.blockRegistry.register(new DefinitionListParser(), 32);
+		this.blockRegistry.register(new ReferenceDefinitionParser(), 38);
 		this.blockRegistry.register(
 			new ListParser({
 				stripContinuationIndent: true,
@@ -123,6 +129,8 @@ class TextoParser {
 		// Add more as implemented...
 
 		// Register default inline parsers
+		this.inlineRegistry.register(new LinkParser(), 15);
+		this.inlineRegistry.register(new CodeParser(), 25);
 		this.inlineRegistry.register(new EmphasisParser(), 35);
 		// Add more as implemented...
 	}

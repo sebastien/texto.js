@@ -21,9 +21,16 @@ import type { Cursor } from "../../utils/cursor.ts";
 import type { InlineMatch, Node } from "../../utils/types.ts";
 import { BaseInlineParser } from "./base.ts";
 
+interface LinkParserOptions {
+	enableReferenceLinks?: boolean;
+}
+
 class LinkParser extends BaseInlineParser {
-	constructor() {
+	private enableReferenceLinks: boolean;
+
+	constructor(options: LinkParserOptions = {}) {
 		super("link", INLINE_PRIORITIES.LINK);
+		this.enableReferenceLinks = options.enableReferenceLinks !== false;
 	}
 
 	findNext(cursor: Cursor, _context: ParsingContext): InlineMatch | null {
@@ -146,6 +153,11 @@ class LinkParser extends BaseInlineParser {
 						};
 					}
 				} else {
+					if (!this.enableReferenceLinks) {
+						pos = startBracket + 1;
+						continue;
+					}
+
 					// Check for reference link: [text][ref] or [text] [ref]
 					// May have optional whitespace between the brackets
 					let ref = "";
@@ -185,13 +197,13 @@ class LinkParser extends BaseInlineParser {
 					}
 
 					// Collapsed reference: [text] or shortcut reference
-					// Next char is space, newline, or end of text
-					if (
-						pos >= textLength ||
-						text[pos] === " " ||
-						text[pos] === "\t" ||
-						text[pos] === "\n"
-					) {
+					// Next char can be whitespace, punctuation, or end of text.
+					if (pos >= textLength || /[\s.,!?;:)]/.test(text[pos] || "")) {
+						if (!this.hasReference(_context, textContent)) {
+							pos = startBracket + 1;
+							continue;
+						}
+
 						return {
 							start: startBracket,
 							end: pos,
@@ -250,6 +262,11 @@ class LinkParser extends BaseInlineParser {
 			// Reference link - need to resolve
 			const ref = (match.ref as string) || "";
 			const normalizedRef = ref.toLowerCase().trim();
+			const phaseReferences = context.keyIndex.get(
+				"phase.reference-collection.references",
+			) as
+				| Map<string, { url: string; title: string; line: number }>
+				| undefined;
 
 			// Try to find reference in context
 			let found = false;
@@ -265,6 +282,17 @@ class LinkParser extends BaseInlineParser {
 					}
 					found = true;
 					break;
+				}
+			}
+
+			if (!found && phaseReferences) {
+				const phaseReference = phaseReferences.get(normalizedRef);
+				if (phaseReference) {
+					node.attributes.set("href", phaseReference.url);
+					if (phaseReference.title) {
+						node.attributes.set("title", phaseReference.title);
+					}
+					found = true;
 				}
 			}
 
@@ -350,6 +378,21 @@ class LinkParser extends BaseInlineParser {
 			url,
 			style: "automatic",
 		};
+	}
+
+	private hasReference(context: ParsingContext, label: string): boolean {
+		const normalized = label.toLowerCase().trim();
+
+		for (const target of context.targets) {
+			if (target.name.toLowerCase() === normalized) {
+				return true;
+			}
+		}
+
+		const phaseData = context.keyIndex.get(
+			"phase.reference-collection.references",
+		) as Map<string, { url: string; title: string; line: number }> | undefined;
+		return phaseData?.has(normalized) || false;
 	}
 }
 

@@ -52,35 +52,35 @@ class ListParser extends BaseBlockParser {
 		// Check for list markers
 		const current = cursor.current();
 		const next = cursor.peek(1);
-		const next2 = cursor.peek(2);
 
-		// Unordered: - or * or +
-		if (current === "-" || current === "*" || current === "+") {
-			if (next === " " || next === "\t") {
-				cursor.pos = save.pos;
-				cursor.lineNumber = save.lineNumber;
-				cursor.columnNumber = save.columnNumber;
-				return { type: "list", listType: "unordered", markerWidth: 2 };
-			}
-		}
-
-		// Todo: [ ], [x], [X]
+		// GitHub-style task list: -, *, + followed by [ ], [x], or [X]
 		if (
-			current === "[" &&
-			next2 === "]" &&
-			(next === " " ||
-				next === "-" ||
-				next === "x" ||
-				next === "X" ||
-				next === "~")
+			(current === "-" || current === "*" || current === "+") &&
+			(next === " " || next === "\t")
 		) {
-			if (cursor.peek(3) === " " || cursor.peek(3) === "\t") {
+			const boxOpen = cursor.peek(2);
+			const boxState = cursor.peek(3);
+			const boxClose = cursor.peek(4);
+			const afterBox = cursor.peek(5);
+
+			if (
+				boxOpen === "[" &&
+				boxClose === "]" &&
+				(boxState === " " || boxState === "x" || boxState === "X") &&
+				(afterBox === " " || afterBox === "\t")
+			) {
 				cursor.pos = save.pos;
 				cursor.lineNumber = save.lineNumber;
 				cursor.columnNumber = save.columnNumber;
-				const checked = next === "x" || next === "X";
-				return { type: "list", listType: "todo", checked, markerWidth: 4 };
+				const checked = boxState === "x" || boxState === "X";
+				return { type: "list", listType: "todo", checked, markerWidth: 6 };
 			}
+
+			// Unordered: - or * or +
+			cursor.pos = save.pos;
+			cursor.lineNumber = save.lineNumber;
+			cursor.columnNumber = save.columnNumber;
+			return { type: "list", listType: "unordered", markerWidth: 2 };
 		}
 
 		// Ordered: 1), 1., a)

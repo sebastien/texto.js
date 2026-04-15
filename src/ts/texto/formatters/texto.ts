@@ -142,6 +142,9 @@ function formatInline(node: Node): string {
 		case "link":
 			return formatLink(node);
 
+		case "a":
+			return formatAnchor(node);
+
 		case "target":
 			return formatTarget(node);
 
@@ -154,6 +157,25 @@ function formatInline(node: Node): string {
 		default:
 			return formatChildren(node);
 	}
+}
+
+function isBlockListItemChild(node: Node): boolean {
+	if (node.type !== "element") {
+		return false;
+	}
+
+	const name = node.name || "";
+	return (
+		name === "p" ||
+		name === "paragraph" ||
+		name === "list" ||
+		name === "section" ||
+		name === "pre" ||
+		name === "preformatted" ||
+		name === "table" ||
+		name === "tagged" ||
+		name === "definition"
+	);
 }
 
 function formatChildren(node: Node): string {
@@ -278,17 +300,42 @@ function formatListItemText(
 
 // Format list item content handling nested blocks
 function formatItemWithNestedBlocks(item: Node, _baseIndent: number): string {
-	// Get block-level children
-	const blocks = item.children.filter((c) => c.type === "element");
+	const children = item.children || [];
+	if (children.length === 0) {
+		return "";
+	}
 
-	if (blocks.length === 0) {
-		return formatInline(item).trim();
+	const hasBlockChildren = children.some((child) =>
+		isBlockListItemChild(child),
+	);
+	if (!hasBlockChildren) {
+		return formatChildren(item).trim();
 	}
 
 	// Filter out empty paragraphs and get text content
 	const texts: string[] = [];
 
-	for (const block of blocks) {
+	for (const block of children) {
+		if (block.type === "text") {
+			const text = (block.content || "").trim();
+			if (text) {
+				texts.push(text);
+			}
+			continue;
+		}
+
+		if (block.type !== "element") {
+			continue;
+		}
+
+		if (!isBlockListItemChild(block)) {
+			const text = formatInline(block).trim();
+			if (text) {
+				texts.push(text);
+			}
+			continue;
+		}
+
 		let text = "";
 
 		if (block.name === "p" || block.name === "paragraph") {
@@ -429,6 +476,23 @@ function formatLink(node: Node): string {
 	}
 
 	return `[${text}](${target})`;
+}
+
+function formatAnchor(node: Node): string {
+	const href = node.attributes.get("href") || "";
+	const title = node.attributes.get("title") || "";
+	const text = formatChildren(node);
+
+	if (!href) {
+		return text;
+	}
+
+	if (title) {
+		const escapedTitle = title.replace(/"/g, '\\"');
+		return `[${text}](${href} "${escapedTitle}")`;
+	}
+
+	return `[${text}](${href})`;
 }
 
 function formatTarget(node: Node): string {
