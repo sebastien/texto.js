@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
 	applyAstPatches,
+	delta,
 	IncrementalParser,
 	TextoParser,
 	toJSON,
@@ -129,5 +130,47 @@ describe("IncrementalParser", () => {
 		const insertedBlock = incremental.tree.content.children.at(-1);
 		expect(insertedBlock).toBeDefined();
 		expect(existingIds.has(insertedBlock!.id)).toBe(false);
+	});
+
+	test("patch accepts multiple edits with original-source offsets", () => {
+		const parser = new TextoParser();
+		const incremental = new IncrementalParser("abcd", parser);
+
+		const patches = incremental.patch([
+			{ offset: 1, length: 0, text: "X" },
+			{ offset: 3, length: 1, text: "Z" },
+		]);
+
+		expect(incremental.source).toBe("aXbcZ");
+		expect(toJSON(incremental.tree, true)).toBe(
+			toJSON(parser.parse("aXbcZ"), true),
+		);
+		expect(patches.some((patch) => patch.type === "UPDATE_OFFSETS")).toBe(true);
+	});
+
+	test("patch accepts delta operations", () => {
+		const source = "A B C D";
+		const target = "A X C Y D";
+		const parser = new TextoParser();
+		const incremental = new IncrementalParser(source, parser);
+		const edits = delta(source, target);
+
+		const patches = incremental.patch(edits);
+
+		expect(incremental.source).toBe(target);
+		expect(toJSON(incremental.tree, true)).toBe(
+			toJSON(parser.parse(target), true),
+		);
+		expect(patches.some((patch) => patch.type === "UPDATE_OFFSETS")).toBe(true);
+	});
+
+	test("patch rejects mixed patch arrays", () => {
+		const incremental = new IncrementalParser("abc");
+		const mixed = [
+			{ offset: 1, length: 0, text: "X" },
+			{ retain: 2 },
+		] as unknown as { offset: number; length: number; text: string }[];
+
+		expect(() => incremental.patch(mixed)).toThrow("Invalid patch input");
 	});
 });

@@ -2,6 +2,7 @@ import { TextoParser } from "../texto.ts";
 import { DocumentBuilder } from "../document/builder.ts";
 import { annotateBlockStructure } from "./block-structure.ts";
 import { ParsingContext } from "./context.ts";
+import type { Delta, DeltaOp } from "../delta.ts";
 import type { AstPatch, Document, Node, TextEdit } from "../utils/types.ts";
 
 const SECTION_ORDER = [
@@ -10,6 +11,104 @@ const SECTION_ORDER = [
 	"references",
 	"appendices",
 ] as const;
+
+function isTextEdit(value: unknown): value is TextEdit {
+	if (!value || typeof value !== "object") {
+		return false;
+	}
+	const candidate = value as Partial<TextEdit>;
+	return (
+		typeof candidate.offset === "number" &&
+		typeof candidate.length === "number" &&
+		typeof candidate.text === "string"
+	);
+}
+
+function isDeltaOp(value: unknown): value is DeltaOp {
+	if (!value || typeof value !== "object") {
+		return false;
+	}
+	const candidate = value as Partial<DeltaOp>;
+	if ("retain" in candidate) {
+		return typeof candidate.retain === "number";
+	}
+	if ("insert" in candidate) {
+		return typeof candidate.insert === "string";
+	}
+	if ("delete" in candidate) {
+		return typeof candidate.delete === "number";
+	}
+	return false;
+}
+
+function deltaToTextEdits(ops: Delta): TextEdit[] {
+	const edits: TextEdit[] = [];
+	let oldCursor = 0;
+	let pendingStart: number | null = null;
+	let pendingDelete = 0;
+	let pendingInsert = "";
+
+	const flush = (): void => {
+		if (pendingStart === null) {
+			return;
+		}
+		edits.push({
+			offset: pendingStart,
+			length: pendingDelete,
+			text: pendingInsert,
+		});
+		pendingStart = null;
+		pendingDelete = 0;
+		pendingInsert = "";
+	};
+
+	for (const op of ops) {
+		if ("retain" in op) {
+			flush();
+			oldCursor += op.retain;
+			continue;
+		}
+
+		if (pendingStart === null) {
+			pendingStart = oldCursor;
+		}
+
+		if ("delete" in op) {
+			pendingDelete += op.delete;
+			oldCursor += op.delete;
+			continue;
+		}
+
+		pendingInsert += op.insert;
+	}
+
+	flush();
+	return edits;
+}
+
+function toTextEdits(input: TextEdit | TextEdit[] | Delta): TextEdit[] {
+	if (isTextEdit(input)) {
+		return [input];
+	}
+
+	if (!Array.isArray(input)) {
+		throw new Error("Invalid patch input");
+	}
+
+	if (input.length === 0) {
+		return [];
+	}
+
+	if (input.every(isTextEdit)) {
+		return input;
+	}
+
+	if (input.every(isDeltaOp)) {
+		return deltaToTextEdits(input);
+	}
+
+	throw new Error("Invalid patch input");
+}
 
 function applyTextEdit(source: string, edit: TextEdit): string {
 	const before = source.slice(0, edit.offset);
@@ -534,7 +633,7 @@ export class IncrementalParser {
 		this.tree = this.parser.parse(source);
 	}
 
-	patch(edit: TextEdit): AstPatch[] {
+	private patchEdit(edit: TextEdit): AstPatch[] {
 		if (
 			edit.offset < 0 ||
 			edit.length < 0 ||
@@ -576,6 +675,31 @@ export class IncrementalParser {
 		this.source = nextSource;
 		applyAstPatches(this.tree, patches);
 		annotateBlockStructure(this.tree);
+
+		return patches;
+	}
+
+	patch(edit: TextEdit): AstPatch[];
+	patch(edits: TextEdit[]): AstPatch[];
+	patch(delta: Delta): AstPatch[];
+	patch(input: TextEdit | TextEdit[] | Delta): AstPatch[] {
+		const edits = toTextEdits(input);
+		if (edits.length === 0) {
+			return [];
+		}
+
+		const patches: AstPatch[] = [];
+		let shift = 0;
+
+		for (const edit of edits) {
+			const liveEdit: TextEdit = {
+				offset: edit.offset + shift,
+				length: edit.length,
+				text: edit.text,
+			};
+			patches.push(...this.patchEdit(liveEdit));
+			shift += edit.text.length - edit.length;
+		}
 
 		return patches;
 	}
