@@ -205,16 +205,17 @@ class SectionParser extends BaseBlockParser {
 		// Push section node to stack so children are added to it
 		context.builder.pushNode(sectionNode);
 
-		// Create title node with position (just the title line)
+		// Create title node with heading-block position so it includes
+		// prefixes (e.g. #, 1.) and trailing newline/underline when present.
 		const titleEnd = titleStart + title.length;
 		const titleNode = context.builder.createAndAppend(
 			"title",
 			{},
 			{
-				start: titleStart,
-				end: titleEnd,
-				line: titleStartLine,
-				column: titleStartColumn,
+				start,
+				end,
+				line: startLine,
+				column: startColumn,
 			},
 		);
 		const normalizedTitle = context.normaliseText(title);

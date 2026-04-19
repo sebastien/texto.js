@@ -451,6 +451,7 @@ class ListParser extends BaseBlockParser {
 
 			// Move to next line
 			cursor.advance(); // skip newline
+			const lineEndWithNewline = cursor.pos;
 
 			// Check indentation of next line
 			const lineStartSave = cursor.clone();
@@ -461,7 +462,7 @@ class ListParser extends BaseBlockParser {
 				cursor.pos = lineStartSave.pos;
 				cursor.lineNumber = lineStartSave.lineNumber;
 				cursor.columnNumber = lineStartSave.columnNumber;
-				itemEnd = lineEnd;
+				itemEnd = lineEndWithNewline;
 				break;
 			}
 
@@ -473,7 +474,7 @@ class ListParser extends BaseBlockParser {
 					cursor.pos = recognitionSave.pos;
 					cursor.lineNumber = recognitionSave.lineNumber;
 					cursor.columnNumber = recognitionSave.columnNumber;
-					itemEnd = lineEnd;
+					itemEnd = lineEndWithNewline;
 					break;
 				}
 				cursor.pos = recognitionSave.pos;
@@ -524,7 +525,7 @@ class ListParser extends BaseBlockParser {
 
 					if (!isTaggedBlock) {
 						// Not a list item and not a tagged block - end the list
-						itemEnd = lineEnd;
+						itemEnd = lineEndWithNewline;
 						break;
 					}
 					// It's a tagged block - continue with this item
