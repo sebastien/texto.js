@@ -100,7 +100,7 @@ class HorizontalRuleParser extends BaseBlockParser {
 
 		// Create hr node
 		const node = context.builder.createAndAppend(
-			"hr",
+			"horizontal-rule",
 			{},
 			{
 				start,

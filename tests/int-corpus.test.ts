@@ -3,7 +3,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { TextoParser } from "../src/ts/texto/texto";
-import { formatTexto } from "../src/ts/texto/formatters/texto";
+import { formatTexto } from "../src/ts/texto/backends/texto";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { join } from "path";
 

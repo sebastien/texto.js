@@ -276,30 +276,11 @@ class BlockquoteParser extends BaseBlockParser {
 				}
 
 				if (headerMatch) {
-					// Create header directly
+					// Keep blockquote headings in the canonical section shape without
+					// mixing them into the document-wide section stack.
 					const level = headerMatch[1].length;
 					const text = headerMatch[2];
-					const headerNode = context.builder.createAndAppend(
-						`h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6",
-						{},
-						{
-							start: currentOffset,
-							end: currentOffset,
-							line: 0,
-							column: 0,
-						},
-					);
-					if (context.parser) {
-						// Push header node, parse inlines, then pop
-						context.builder.pushNode(headerNode);
-						context.parser.parseInlines(
-							text,
-							headerNode,
-							context,
-							currentOffset,
-						);
-						context.builder.popNode();
-					}
+					this.createSection(text, level, context, currentOffset);
 				} else {
 					// Same level - add to current content
 					currentLines.push(line.content);
@@ -386,6 +367,36 @@ class BlockquoteParser extends BaseBlockParser {
 		}
 	}
 
+	private createSection(
+		title: string,
+		depth: number,
+		context: ParsingContext,
+		offset: number,
+	): void {
+		const sectionNode = context.builder.createAndAppend(
+			"section",
+			{},
+			{
+				start: offset,
+				end: offset,
+				line: 0,
+				column: 0,
+			},
+		);
+		sectionNode.attributes.set("depth", String(depth));
+		sectionNode.attributes.set("_style", "hash");
+
+		context.builder.pushNode(sectionNode);
+		const titleNode = context.builder.createAndAppend("title", {}, undefined);
+		if (context.parser) {
+			context.builder.pushNode(titleNode);
+			context.parser.parseInlines(title, titleNode, context, offset);
+			context.builder.popNode();
+		}
+		context.builder.createAndAppend("content", {}, undefined);
+		context.builder.popNode();
+	}
+
 	/**
 	 * Process content lines, creating paragraphs or other block elements
 	 */
@@ -426,7 +437,7 @@ class BlockquoteParser extends BaseBlockParser {
 		if (!content.trim()) return;
 
 		const pNode = context.builder.createAndAppend(
-			"p",
+			"paragraph",
 			{},
 			{
 				start: 0,

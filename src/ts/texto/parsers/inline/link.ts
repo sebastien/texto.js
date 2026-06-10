@@ -230,7 +230,7 @@ class LinkParser extends BaseInlineParser {
 
 		// Create link node
 		const node = context.builder.createAndAppend(
-			"a",
+			"link",
 			{},
 			{
 				start: match.start,
@@ -243,7 +243,7 @@ class LinkParser extends BaseInlineParser {
 		// Handle different link styles
 		if (match.style === "inline") {
 			// Inline link - URL is known
-			node.attributes.set("href", (match.url as string) || "");
+			node.attributes.set("target", (match.url as string) || "");
 			if (match.title) {
 				node.attributes.set("title", match.title as string);
 			}
@@ -254,7 +254,7 @@ class LinkParser extends BaseInlineParser {
 			// Automatic link: <http://example.com>
 			// The URL is both the href and the visible text
 			const url = (match.url as string) || "";
-			node.attributes.set("href", url);
+			node.attributes.set("target", url);
 
 			// Add the URL as text content (without the angle brackets)
 			this.addLinkText(node, url, context, match.start + 1);
@@ -273,7 +273,7 @@ class LinkParser extends BaseInlineParser {
 			for (const target of context.targets) {
 				if (target.name.toLowerCase() === normalizedRef) {
 					node.attributes.set(
-						"href",
+						"target",
 						target.node.attributes.get("target") || "",
 					);
 					const title = target.node.attributes.get("title");
@@ -288,7 +288,7 @@ class LinkParser extends BaseInlineParser {
 			if (!found && phaseReferences) {
 				const phaseReference = phaseReferences.get(normalizedRef);
 				if (phaseReference) {
-					node.attributes.set("href", phaseReference.url);
+					node.attributes.set("target", phaseReference.url);
 					if (phaseReference.title) {
 						node.attributes.set("title", phaseReference.title);
 					}
@@ -299,7 +299,7 @@ class LinkParser extends BaseInlineParser {
 			if (!found) {
 				// Reference not found - treat as plain text with brackets
 				// Or create broken link
-				node.attributes.set("href", "");
+				node.attributes.set("target", "");
 				node.attributes.set("data-broken-ref", ref);
 			}
 

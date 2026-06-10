@@ -21,9 +21,9 @@ import { DefinitionListParser } from "./parsers/block/definition-list.ts";
 import { FencedBlockParser } from "./parsers/block/fenced.ts";
 import { IndentedPreBlockParser } from "./parsers/block/indented-pre.ts";
 import { ListParser } from "./parsers/block/list.ts";
-import { ReferenceDefinitionParser } from "./parsers/block/reference-definition.ts";
 // Block parsers
 import { ParagraphParser } from "./parsers/block/paragraph.ts";
+import { ReferenceDefinitionParser } from "./parsers/block/reference-definition.ts";
 import { SectionParser } from "./parsers/block/section.ts";
 import { TaggedBlockParser } from "./parsers/block/tagged.ts";
 // Inline parsers

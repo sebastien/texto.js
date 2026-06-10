@@ -14,6 +14,8 @@
 import type { Document } from "../utils/types.ts";
 import { htmlBackend } from "./html.ts";
 import { jsonBackend } from "./json.ts";
+import { markdownBackend } from "./markdown.ts";
+import { textoBackend } from "./texto.ts";
 import type { BackendOptions, OutputBackend } from "./types.ts";
 import { xmlBackend } from "./xml.ts";
 
@@ -21,6 +23,8 @@ const BACKENDS: Record<string, OutputBackend> = {
 	json: jsonBackend,
 	xml: xmlBackend,
 	html: htmlBackend,
+	texto: textoBackend,
+	markdown: markdownBackend,
 };
 
 // Type: BackendFormat
@@ -63,7 +67,9 @@ export {
 	getAvailableBackends,
 	htmlBackend,
 	jsonBackend,
+	markdownBackend,
 	renderBackend,
+	textoBackend,
 	xmlBackend,
 };
 

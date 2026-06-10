@@ -122,7 +122,7 @@ class IndentedCodeParser extends BaseBlockParser {
 
 		// Create pre node
 		const node = context.builder.createAndAppend(
-			"pre",
+			"preformatted",
 			{},
 			{
 				start,

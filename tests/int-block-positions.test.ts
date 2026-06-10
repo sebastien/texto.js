@@ -35,7 +35,7 @@ describe("block positions", () => {
 		const doc = parser.parse(input);
 
 		const heading = doc.content.children.find(
-			(node) => node.type === "element" && node.name === "h2",
+			(node) => node.type === "element" && node.name === "section",
 		);
 		expect(heading).toBeDefined();
 		if (!heading || heading.type !== "element" || !heading.position) {

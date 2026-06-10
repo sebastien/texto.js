@@ -28,10 +28,19 @@ export {
 	getAvailableBackends,
 	htmlBackend,
 	jsonBackend,
+	markdownBackend,
 	type OutputBackend,
 	renderBackend,
+	textoBackend,
 	xmlBackend,
 } from "./backends/index.ts";
+export {
+	deserializeDocument,
+	formatJSON,
+	toJSON,
+} from "./backends/json.ts";
+export { formatMarkdown } from "./backends/markdown.ts";
+export { formatTexto } from "./backends/texto.ts";
 export {
 	type ApplyResult,
 	apply,
@@ -71,12 +80,25 @@ export {
 	getFirstChild,
 	getLastChild,
 } from "./document/tree.ts";
+export type {
+	FrontEndContext,
+	FrontendFormat,
+	FrontendOptions,
+	InputFrontend,
+	NodeFactory,
+} from "./frontends/index.ts";
 export {
-	deserializeDocument,
-	formatJSON,
-	toJSON,
-} from "./formatters/json.ts";
-export { formatTexto } from "./formatters/texto.ts";
+	DefaultNodeFactory,
+	FRONTENDS,
+	FrontEndProcessor,
+	getAvailableFrontends,
+	htmlFrontend,
+	htmlToDocument,
+	htmlToTexto,
+	markdownFrontend,
+	parseFrontend,
+	textoFrontend,
+} from "./frontends/index.ts";
 export {
 	BaseBlockParser,
 	type BlockParser,

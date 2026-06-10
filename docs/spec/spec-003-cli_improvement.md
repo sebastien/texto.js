@@ -8,10 +8,11 @@ For `texto`:
 - `-t|--to` to support the output formats, including json, html, xml, texto (default HTML)
 - `-o|--output` to specify an output path, stdout by default.
 
-Now, `texto parse` should only format the AST and export it to JSON, and support the same `-f|--from` format.
+Now, `texto` is the only CLI entry point.
 
-Then,  `texto format` should by default format to texto, and as input take either texto/markdown, or detect JSON and restore the AST and then render it.
+It should accept `-f|--from` and `-t|--to` to convert between texto, markdown, html, json, and xml, with input and output formats inferred from file extensions when set to `auto`.
 
-So `texto` works as the main CLI, and then `parse`/`format` can be used to export/import and analyse.
+Subcommands such as `parse`, `format`, and `convert` are removed so there is a single conversion pipeline:
 
+`input -> frontend -> AST -> backend -> output`
 

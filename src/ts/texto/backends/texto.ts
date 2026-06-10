@@ -3,8 +3,8 @@
 // License: MIT
 // Created: 2026-04-15
 
-// Module: texto/formatters/texto
-// Implements the formatters/texto module for texto parsing and formatting workflows.
+// Module: texto/backends/texto
+// Implements the texto backend for native texto formatting workflows.
 
 // ----------------------------------------------------------------------------
 //
@@ -14,6 +14,7 @@
 // Texto formatter - Convert AST back to texto format
 
 import type { Document, Node } from "../utils/types.ts";
+import type { OutputBackend } from "./types.ts";
 
 function formatTexto(doc: Document): string {
 	const parts: string[] = [];
@@ -98,11 +99,9 @@ function formatBlock(node: Node): string {
 		case "list":
 			return formatList(node);
 
-		case "p":
 		case "paragraph":
 			return formatParagraph(node);
 
-		case "pre":
 		case "preformatted":
 			return formatPreformatted(node);
 
@@ -132,7 +131,6 @@ function formatInline(node: Node): string {
 		case "strong":
 			return `**${formatChildren(node)}**`;
 
-		case "em":
 		case "emphasis":
 			return `*${formatChildren(node)}*`;
 
@@ -141,9 +139,6 @@ function formatInline(node: Node): string {
 
 		case "link":
 			return formatLink(node);
-
-		case "a":
-			return formatAnchor(node);
 
 		case "target":
 			return formatTarget(node);
@@ -166,11 +161,9 @@ function isBlockListItemChild(node: Node): boolean {
 
 	const name = node.name || "";
 	return (
-		name === "p" ||
 		name === "paragraph" ||
 		name === "list" ||
 		name === "section" ||
-		name === "pre" ||
 		name === "preformatted" ||
 		name === "table" ||
 		name === "tagged" ||
@@ -338,7 +331,7 @@ function formatItemWithNestedBlocks(item: Node, _baseIndent: number): string {
 
 		let text = "";
 
-		if (block.name === "p" || block.name === "paragraph") {
+		if (block.name === "paragraph") {
 			text = formatParagraph(block).trim();
 		} else if (block.name === "list") {
 			// For nested lists, just format them
@@ -478,23 +471,6 @@ function formatLink(node: Node): string {
 	return `[${text}](${target})`;
 }
 
-function formatAnchor(node: Node): string {
-	const href = node.attributes.get("href") || "";
-	const title = node.attributes.get("title") || "";
-	const text = formatChildren(node);
-
-	if (!href) {
-		return text;
-	}
-
-	if (title) {
-		const escapedTitle = title.replace(/"/g, '\\"');
-		return `[${text}](${href} "${escapedTitle}")`;
-	}
-
-	return `[${text}](${href})`;
-}
-
 function formatTarget(node: Node): string {
 	const name = node.attributes.get("name") || "";
 	const text = formatChildren(node);
@@ -527,11 +503,13 @@ function formatMarkup(node: Node): string {
 	return `<${tag}${attrStr} />`;
 }
 
+const textoBackend: OutputBackend = (doc: Document): string => formatTexto(doc);
+
 // ----------------------------------------------------------------------------
 //
 // EXPORTS
 //
 // ----------------------------------------------------------------------------
-export { formatTexto };
+export { formatTexto, textoBackend };
 
 // EOF

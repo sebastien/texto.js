@@ -353,7 +353,18 @@ class ListParser extends BaseBlockParser {
 		const normalizedRest = rest.map((line) =>
 			this.stripListContinuationIndent(line),
 		);
-		return [first, ...normalizedRest].join("\n");
+
+		// Boundary blank lines at the end of an item belong to the surrounding
+		// list, not to nested content. Strip them before parsing so a single
+		// nested list item does not become loose because of the parent's
+		// trailing boundary.
+		let lastNonBlank = normalizedRest.length - 1;
+		while (lastNonBlank >= 0 && normalizedRest[lastNonBlank] === "") {
+			lastNonBlank--;
+		}
+		const trimmedRest = normalizedRest.slice(0, lastNonBlank + 1);
+
+		return [first, ...trimmedRest].join("\n");
 	}
 
 	private stripListContinuationIndent(line: string): string {

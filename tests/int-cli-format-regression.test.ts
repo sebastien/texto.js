@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-describe("texto format CLI regression", () => {
+describe("texto CLI texto-backend regression", () => {
 	let tempDir: string;
 	let fixturePath: string;
 	const cliPath = join(import.meta.dirname, "../src/ts/texto/cli/index.ts");
@@ -37,7 +37,7 @@ describe("texto format CLI regression", () => {
 
 	test("keeps inline list item content on a single line", () => {
 		const proc = Bun.spawnSync(
-			[process.execPath, "run", cliPath, "format", fixturePath],
+			[process.execPath, "run", cliPath, "-ttexto", fixturePath],
 			{
 				stdout: "pipe",
 				stderr: "pipe",

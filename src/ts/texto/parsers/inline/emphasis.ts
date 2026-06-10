@@ -123,7 +123,7 @@ class EmphasisParser extends BaseInlineParser {
 	}
 
 	parse(cursor: Cursor, context: ParsingContext, match: InlineMatch): number {
-		const tagName = match.style === "strong" ? "strong" : "em";
+		const tagName = match.style === "strong" ? "strong" : "emphasis";
 
 		// Get current position from cursor for accurate line/column
 		const startPos = cursor.getPosition();

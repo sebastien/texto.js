@@ -51,7 +51,7 @@ describe("block structural attributes", () => {
 		expect(sectionContent.attributes.get("level")).toBe("2");
 
 		const body = sectionContent.children.find(
-			(node) => node.type === "element" && node.name === "p",
+			(node) => node.type === "element" && node.name === "paragraph",
 		);
 		expect(body).toBeDefined();
 		if (!body) {

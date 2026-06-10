@@ -186,7 +186,7 @@ class ImageParser extends BaseInlineParser {
 
 		// Create image node
 		const node = context.builder.createAndAppend(
-			"img",
+			"image",
 			{},
 			{
 				start: match.start,

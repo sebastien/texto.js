@@ -86,7 +86,7 @@ const assertNoMixedTextAndParagraphChildren = (document) => {
 			(child) => child?.type === "text",
 		);
 		const hasParagraph = (item.children || []).some(
-			(child) => child?.type === "element" && child?.name === "p",
+			(child) => child?.type === "element" && child?.name === "paragraph",
 		);
 		expect(hasText && hasParagraph).toBe(false);
 	}

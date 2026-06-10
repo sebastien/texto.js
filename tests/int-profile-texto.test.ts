@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseCommand } from "../src/ts/texto/cli/parse";
+import { renderCommand } from "../src/ts/texto/cli/index";
 
 describe("texto profile syntax", () => {
 	let tempDir: string;
@@ -19,7 +19,7 @@ describe("texto profile syntax", () => {
 
 	async function renderTextoHTML(input: string): Promise<string> {
 		writeFileSync(fixturePath, input);
-		return parseCommand({
+		return renderCommand({
 			file: fixturePath,
 			profile: "texto",
 			format: "html",
@@ -28,7 +28,7 @@ describe("texto profile syntax", () => {
 
 	async function parseTextoJSON(input: string): Promise<unknown> {
 		writeFileSync(fixturePath, input);
-		const output = await parseCommand({
+		const output = await renderCommand({
 			file: fixturePath,
 			profile: "texto",
 			format: "json",

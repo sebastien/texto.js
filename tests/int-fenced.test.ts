@@ -2,7 +2,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { TextoParser } from "../src/ts/texto/texto";
-import { formatJSON } from "../src/ts/texto/formatters/json";
+import { formatJSON } from "../src/ts/texto/backends/json";
 
 describe("Fenced block parsing", () => {
 	test("parses simple fenced block", () => {
@@ -20,7 +20,7 @@ More text
 		// Find the pre element
 		const content = doc.content;
 		const preElements = content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -38,7 +38,7 @@ console.log(x);
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -54,7 +54,7 @@ print("hello")
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -70,7 +70,7 @@ print("hello")
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -89,7 +89,7 @@ console.log(2);
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(2);
@@ -107,7 +107,7 @@ console.log(2);
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -127,7 +127,7 @@ line 2
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -147,7 +147,7 @@ line 2
 `);
 
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		expect(preElements.length).toBe(1);
@@ -164,7 +164,7 @@ unclosed code block
 
 		// In strict mode, unclosed blocks should be treated as paragraphs
 		const preElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "pre",
+			(child: { name: string }) => child.name === "preformatted",
 		);
 
 		// Should not create a pre element for unclosed block
@@ -172,7 +172,7 @@ unclosed code block
 
 		// Should have a paragraph instead
 		const pElements = doc.content.children.filter(
-			(child: { name: string }) => child.name === "p",
+			(child: { name: string }) => child.name === "paragraph",
 		);
 
 		expect(pElements.length).toBeGreaterThan(0);
@@ -197,7 +197,7 @@ Conclusion paragraph.
 		// Find pre elements at any depth (fenced block is inside section)
 		const findPreElements = (node: any): any[] => {
 			const results: any[] = [];
-			if (node.name === "pre") {
+			if (node.name === "preformatted") {
 				results.push(node);
 			}
 			if (node.children) {
@@ -242,7 +242,7 @@ code
 `);
 
 			const preElements = doc.content.children.filter(
-				(child: { name: string }) => child.name === "pre",
+				(child: { name: string }) => child.name === "preformatted",
 			);
 
 			expect(preElements.length).toBe(1);
@@ -265,7 +265,7 @@ const x: number = 42;
 
 		// Find pre element in content
 		const findPre = (node: any): any => {
-			if (node.name === "pre") return node;
+			if (node.name === "preformatted") return node;
 			if (node.children) {
 				for (const child of node.children) {
 					const found = findPre(child);

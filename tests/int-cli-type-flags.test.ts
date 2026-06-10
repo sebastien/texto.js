@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-describe("texto parse type flags", () => {
+describe("texto CLI type flags", () => {
 	let tempDir: string;
 	let fixturePath: string;
 	const cliPath = join(import.meta.dirname, "../src/ts/texto/cli/index.ts");
@@ -20,7 +20,7 @@ describe("texto parse type flags", () => {
 
 	test("supports -thtml shorthand", () => {
 		const proc = Bun.spawnSync(
-			[process.execPath, "run", cliPath, "parse", "-thtml", fixturePath],
+			[process.execPath, "run", cliPath, "-thtml", fixturePath],
 			{
 				stdout: "pipe",
 				stderr: "pipe",
@@ -33,7 +33,7 @@ describe("texto parse type flags", () => {
 
 	test("supports -txml shorthand", () => {
 		const proc = Bun.spawnSync(
-			[process.execPath, "run", cliPath, "parse", "-txml", fixturePath],
+			[process.execPath, "run", cliPath, "-txml", fixturePath],
 			{
 				stdout: "pipe",
 				stderr: "pipe",

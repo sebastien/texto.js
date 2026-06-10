@@ -15,7 +15,7 @@
 // Re-exports all browser-safe APIs plus Node.js-specific CLI functionality
 
 // Import CLI functionality
-import { formatCommand, main, parseCommand } from "./cli/index.ts";
+import { main, renderCommand } from "./cli/index.ts";
 
 // Re-export CLI functionality
 
@@ -35,6 +35,6 @@ export * from "./index.ts";
 // EXPORTS
 //
 // ----------------------------------------------------------------------------
-export { formatCommand, main, parseCommand };
+export { main, renderCommand };
 
 // EOF

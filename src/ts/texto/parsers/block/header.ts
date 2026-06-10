@@ -93,10 +93,16 @@ class HeaderParser extends BaseBlockParser {
 		// Parse heading text based on style
 		let title = "";
 		let depth = 1;
+		let titleStart = start;
+		let titleStartLine = startLine;
+		let titleStartColumn = startColumn;
 
 		if (info.style === "underline") {
 			// Underline style: read text, then skip underline line
 			this.skipLeadingWhitespace(cursor);
+			titleStart = cursor.pos;
+			titleStartLine = cursor.lineNumber;
+			titleStartColumn = cursor.columnNumber;
 			title = cursor.readLine().trim();
 
 			// Skip newline and underline
@@ -124,6 +130,9 @@ class HeaderParser extends BaseBlockParser {
 			}
 
 			// Read title (everything until end of line, optionally stripping trailing hashes)
+			titleStart = cursor.pos;
+			titleStartLine = cursor.lineNumber;
+			titleStartColumn = cursor.columnNumber;
 			title = cursor.readLine().trim();
 
 			// Strip optional trailing hashes
@@ -132,11 +141,31 @@ class HeaderParser extends BaseBlockParser {
 		}
 
 		const end = cursor.pos;
+		const endLine = cursor.lineNumber;
+		const endColumn = cursor.columnNumber;
+		const indent = context.getIndentation(title);
+		const parentContent = context.getParentSection(depth, indent);
 
-		// Create header element (h1-h6) directly without section wrapper
-		const tagName = `h${depth}`;
+		context.builder.setCurrentNode(parentContent);
+
 		const node = context.builder.createAndAppend(
-			tagName,
+			"section",
+			{},
+			{
+				start,
+				end,
+				line: startLine,
+				column: startColumn,
+			},
+		);
+		node.attributes.set("depth", String(depth));
+		node.attributes.set("_indent", String(indent));
+		node.attributes.set("_style", info.style as string);
+		node.attributes.set("id", context.asKey(title, node));
+
+		context.builder.pushNode(node);
+		const titleNode = context.builder.createAndAppend(
+			"title",
 			{},
 			{
 				start,
@@ -146,17 +175,31 @@ class HeaderParser extends BaseBlockParser {
 			},
 		);
 
-		// Add title as text node
 		if (title) {
-			const titleStart = start + (end - start - title.length);
-			const textNode = createText(title, {
+			const textNode = createText(context.normaliseText(title), {
 				start: titleStart,
-				end: end,
-				line: startLine,
-				column: startColumn + (tagName.length + 1),
+				end: titleStart + title.length,
+				line: titleStartLine,
+				column: titleStartColumn,
 			});
-			node.children.push(textNode);
+			titleNode.children.push(textNode);
 		}
+
+		const contentNode = context.builder.createAndAppend(
+			"content",
+			{},
+			{
+				start: end,
+				end,
+				line: endLine,
+				column: endColumn,
+			},
+		);
+		contentNode.attributes.set("_indent", String(indent));
+
+		context.builder.popNode();
+		context.pushSection(node, contentNode, depth, indent);
+		context.builder.pushNode(contentNode);
 
 		return {
 			consumed: end - start,

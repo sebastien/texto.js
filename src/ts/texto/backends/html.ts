@@ -74,10 +74,10 @@ function renderList(node: Node): string {
 			if (
 				last &&
 				last.type === "element" &&
-				(last.name === "pre" || last.name === "preformatted") &&
+				last.name === "preformatted" &&
 				first &&
 				first.type === "element" &&
-				(first.name === "paragraph" || first.name === "p") &&
+				first.name === "paragraph" &&
 				renderChildren(first).trim().length <= 1
 			) {
 				children += "\n";
@@ -126,7 +126,7 @@ function renderSection(node: Node): string {
 				.map((child) => renderNode(child))
 				.join("");
 
-	return `<section>${heading}${body}</section>`;
+	return `${heading}${body}`;
 }
 
 function renderNode(node: Node): string {
@@ -151,29 +151,18 @@ function renderNode(node: Node): string {
 		case "section":
 			return renderSection(node);
 
-		case "h1":
-		case "h2":
-		case "h3":
-		case "h4":
-		case "h5":
-		case "h6":
-			return `<${name}>${renderChildren(node)}</${name}>`;
-
-		case "p":
 		case "paragraph":
 			return `<p>${renderChildren(node)}</p>`;
 
 		case "strong":
 			return `<strong>${renderChildren(node)}</strong>`;
 
-		case "em":
 		case "emphasis":
 			return `<em>${renderChildren(node)}</em>`;
 
 		case "code":
 			return `<code>${renderChildren(node)}</code>`;
 
-		case "pre":
 		case "preformatted": {
 			const lang = node.attributes.get("data-lang");
 			const classAttr = lang
@@ -197,14 +186,9 @@ function renderNode(node: Node): string {
 
 		case "link": {
 			const target = escapeHTMLAttribute(node.attributes.get("target") || "");
-			return `<a href="${target}">${renderChildren(node)}</a>`;
-		}
-
-		case "a": {
-			const href = escapeHTMLAttribute(node.attributes.get("href") || "");
 			const title = node.attributes.get("title");
 			const titleAttr = title ? ` title="${escapeHTMLAttribute(title)}"` : "";
-			return `<a href="${href}"${titleAttr}>${renderChildren(node)}</a>`;
+			return `<a href="${target}"${titleAttr}>${renderChildren(node)}</a>`;
 		}
 
 		case "target":
@@ -214,11 +198,9 @@ function renderNode(node: Node): string {
 		case "blockquote":
 			return `<blockquote>${renderChildren(node)}</blockquote>`;
 
-		case "hr":
 		case "horizontal-rule":
 			return `<hr />`;
 
-		case "img":
 		case "image": {
 			const src = escapeHTMLAttribute(node.attributes.get("src") || "");
 			const alt = escapeHTMLAttribute(node.attributes.get("alt") || "");

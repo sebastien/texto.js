@@ -1,28 +1,29 @@
 // Project: texto.js
 // Author:  Sebastien Pierre
 // License: MIT
-// Created: 2026-04-15
+// Created: 2026-06-19
 
 // Module: texto/cli/index
-// Exposes the cli module entry points.
-
-// ----------------------------------------------------------------------------
-//
-// IMPLEMENTATION
-//
-// ----------------------------------------------------------------------------
-// CLI index - Main entry point for texto command-line tool
+// Unified CLI entry point for converting between supported frontends/backends.
 
 import { readFileSync, writeFileSync } from "node:fs";
+import { renderBackend } from "../backends/index.ts";
+import { parseFrontend } from "../frontends/registry.ts";
 import { args, type CLIMeta, type CLIParams, help } from "../utils/cli.ts";
-import { type FormatOptions, formatCommand } from "./format.ts";
-import { type ParseOptions, parseCommand } from "./parse.ts";
 
 const version = "1.0.0";
 
+interface CLIOptions {
+	file?: string;
+	profile?: "texto" | "markdown" | "md" | "html" | "auto";
+	format?: "texto" | "markdown" | "html" | "json" | "xml" | "auto";
+	includePositions?: boolean;
+	strict?: boolean;
+}
+
 const meta: CLIMeta = {
 	command: "texto",
-	description: "Parse and format Texto documents",
+	description: "Convert between texto, markdown, html, json and xml",
 	version,
 	width: 80,
 };
@@ -33,18 +34,18 @@ const mainParams: CLIParams = {
 		short: "f",
 		long: "from",
 		type: "string",
-		description: "Parser profile (texto, markdown, auto)",
+		description: "Input format (texto, markdown, html, auto)",
 		default: "auto",
-		choices: ["texto", "markdown", "md", "auto"],
+		choices: ["texto", "markdown", "md", "html", "auto"],
 	},
 	to: {
 		name: "to",
 		short: "t",
 		long: "to",
 		type: "string",
-		description: "Output format (json, html, xml, texto)",
-		default: "html",
-		choices: ["json", "html", "xml", "texto"],
+		description: "Output format (texto, markdown, html, json, xml, auto)",
+		default: "auto",
+		choices: ["texto", "markdown", "html", "json", "xml", "auto"],
 	},
 	output: {
 		name: "output",
@@ -53,58 +54,18 @@ const mainParams: CLIParams = {
 		type: "string",
 		description: "Output file path (stdout if not provided)",
 	},
-	help: {
-		name: "help",
-		short: "h",
-		long: "help",
-		type: "boolean",
-		description: "Show help message",
-	},
-};
-
-const parseParams: CLIParams = {
-	from: {
-		name: "from",
-		short: "f",
-		long: "from",
-		type: "string",
-		description: "Parser profile (texto, markdown, auto)",
-		default: "auto",
-		choices: ["texto", "markdown", "md", "auto"],
-	},
-	to: {
-		name: "to",
-		short: "t",
-		long: "to",
-		type: "string",
-		description: "Output format (json, html, xml, texto)",
-		default: "json",
-		choices: ["json", "html", "xml", "texto"],
-	},
 	positions: {
 		name: "positions",
 		long: "positions",
 		type: "boolean",
-		description: "Include source positions in output",
+		description: "Include source positions in JSON/XML output",
 	},
-	help: {
-		name: "help",
-		short: "h",
-		long: "help",
+	strict: {
+		name: "strict",
+		short: "s",
+		long: "strict",
 		type: "boolean",
-		description: "Show help message",
-	},
-};
-
-const formatParams: CLIParams = {
-	from: {
-		name: "from",
-		short: "f",
-		long: "from",
-		type: "string",
-		description: "Parser profile (texto, markdown, auto)",
-		default: "auto",
-		choices: ["texto", "markdown", "md", "auto"],
+		description: "Strip or unwrap unknown HTML tags on input",
 	},
 	help: {
 		name: "help",
@@ -123,6 +84,7 @@ async function getInput(file?: string): Promise<string> {
 			throw new Error(`Cannot read file: ${file} - ${error}`);
 		}
 	}
+
 	const chunks: Buffer[] = [];
 	for await (const chunk of process.stdin) {
 		chunks.push(chunk);
@@ -138,184 +100,121 @@ function writeOutput(outputPath: string | undefined, content: string): void {
 	}
 }
 
+function inferInputFormat(filePath?: string): "texto" | "markdown" | "html" {
+	if (!filePath) return "texto";
+	const normalized = filePath.toLowerCase();
+	if (normalized.endsWith(".md") || normalized.endsWith(".markdown")) {
+		return "markdown";
+	}
+	if (normalized.endsWith(".html") || normalized.endsWith(".htm")) {
+		return "html";
+	}
+	return "texto";
+}
+
+function inferOutputFormat(
+	outputPath?: string,
+): "texto" | "markdown" | "html" | "json" | "xml" | null {
+	if (!outputPath) return null;
+	const normalized = outputPath.toLowerCase();
+	if (normalized.endsWith(".txto")) return "texto";
+	if (normalized.endsWith(".md") || normalized.endsWith(".markdown")) {
+		return "markdown";
+	}
+	if (normalized.endsWith(".html") || normalized.endsWith(".htm")) {
+		return "html";
+	}
+	if (normalized.endsWith(".json")) return "json";
+	if (normalized.endsWith(".xml")) return "xml";
+	return null;
+}
+
+async function renderCommand(options: CLIOptions): Promise<string> {
+	const input = await getInput(options.file);
+	const inputFormat =
+		options.profile && options.profile !== "auto"
+			? options.profile === "md"
+				? "markdown"
+				: options.profile
+			: inferInputFormat(options.file);
+	const outputFormat =
+		options.format && options.format !== "auto" ? options.format : "html";
+	const doc = parseFrontend(input, inputFormat, { strict: options.strict });
+	return renderBackend(doc, outputFormat, {
+		includePositions: options.includePositions,
+	});
+}
+
 async function main(): Promise<void> {
 	const commandArgs = process.argv.slice(2);
-
 	if (commandArgs.length === 0) {
 		printMainHelp();
 		process.exit(0);
 	}
 
 	const firstArg = commandArgs[0];
-
 	if (firstArg === "--help" || firstArg === "-h") {
 		printMainHelp();
 		process.exit(0);
 	}
-
 	if (firstArg === "--version" || firstArg === "-v") {
 		console.log(version);
 		process.exit(0);
 	}
-
-	const command = firstArg;
-	const remainingArgs = commandArgs.slice(1);
-
-	try {
-		switch (command) {
-			case "parse":
-				await handleParse(remainingArgs);
-				break;
-
-			case "format":
-				await handleFormat(remainingArgs);
-				break;
-
-			default:
-				await handleMain(commandArgs);
-		}
-	} catch (error) {
-		console.error(`Error: ${error}`);
-		process.exit(1);
+	if (["parse", "format", "convert"].includes(firstArg)) {
+		throw new Error(
+			`Subcommands have been removed. Use 'texto -f <format> -t <format> [file]' instead.`,
+		);
 	}
-}
 
-async function handleMain(argsList: string[]): Promise<void> {
-	const a = args(mainParams, ...argsList);
-
-	if (a.help) {
+	const parsed = args(mainParams, ...commandArgs);
+	if (parsed.help) {
 		printMainHelp();
 		process.exit(0);
 	}
 
-	const file = a._positional?.[0] as string | undefined;
-	const input = await getInput(file);
+	const outputPath = parsed.output as string | undefined;
+	const format =
+		(parsed.to as CLIOptions["format"]) === "auto"
+			? inferOutputFormat(outputPath) || "html"
+			: (parsed.to as CLIOptions["format"]);
+	const output = await renderCommand({
+		file: parsed._positional?.[0] as string | undefined,
+		profile: parsed.from as CLIOptions["profile"],
+		format,
+		includePositions: parsed.positions as boolean,
+		strict: parsed.strict as boolean,
+	});
 
-	const profile = a.from as string;
-	const toFormat = a.to as string;
-
-	let parser: TextoParser;
-	if (profile === "auto" || profile === undefined) {
-		if (file) {
-			if (file.endsWith(".md") || file.endsWith(".markdown")) {
-				const { createMarkdownParser } = await import(
-					"../profiles/markdown.ts"
-				);
-				parser = createMarkdownParser();
-			} else {
-				const { createTextoParser } = await import("../profiles/texto.ts");
-				parser = createTextoParser();
-			}
-		} else {
-			const { createTextoParser } = await import("../profiles/texto.ts");
-			parser = createTextoParser();
-		}
-	} else if (profile === "markdown" || profile === "md") {
-		const { createMarkdownParser } = await import("../profiles/markdown.ts");
-		parser = createMarkdownParser();
-	} else {
-		const { createTextoParser } = await import("../profiles/texto.ts");
-		parser = createTextoParser();
-	}
-
-	const doc = parser.parse(input);
-
-	const { renderBackend } = await import("../backends/index.ts");
-	const output = renderBackend(doc, toFormat, {});
-
-	writeOutput(a.output as string | undefined, output);
-}
-
-async function handleParse(argsList: string[]): Promise<void> {
-	const a = args(parseParams, ...argsList);
-
-	if (a.help) {
-		console.log(
-			help(parseParams, {
-				command: "texto parse",
-				description: "Parse document and export AST to JSON",
-				width: 80,
-			}),
-		);
-		console.log("");
-		console.log("Arguments:");
-		console.log(
-			"  file                    Input file (reads stdin if not provided)",
-		);
-		process.exit(0);
-	}
-
-	const file = a._positional?.[0] as string | undefined;
-	const _input = await getInput(file);
-
-	const options: ParseOptions = {
-		file,
-		profile: a.from as "texto" | "markdown" | "md" | "auto",
-		format: a.to as "json" | "xml" | "html" | "texto",
-		includePositions: a.positions as boolean,
-	};
-
-	const output = await parseCommand(options);
-	writeOutput(undefined, output);
-}
-
-async function handleFormat(argsList: string[]): Promise<void> {
-	const a = args(formatParams, ...argsList);
-
-	if (a.help) {
-		console.log(
-			help(formatParams, {
-				command: "texto format",
-				description: "Parse and re-format texto document to texto markup",
-				width: 80,
-			}),
-		);
-		console.log("");
-		console.log("Arguments:");
-		console.log(
-			"  file                    Input file (reads stdin if not provided)",
-		);
-		console.log("");
-		console.log("Input can be:");
-		console.log("  - Texto markup (.txto files)");
-		console.log("  - Markdown (.md files)");
-		console.log("  - JSON AST (auto-detected)");
-		process.exit(0);
-	}
-
-	const file = a._positional?.[0] as string | undefined;
-	const _input = await getInput(file);
-
-	const options: FormatOptions = {
-		file,
-		profile: a.from as "texto" | "markdown" | "md" | "auto",
-	};
-
-	const output = await formatCommand(options);
-	writeOutput(undefined, output);
+	writeOutput(outputPath, output);
 }
 
 function printMainHelp(): void {
 	console.log(help(mainParams, meta));
 	console.log("");
-	console.log("Commands:");
-	console.log(
-		"  parse                    Parse document and export AST to JSON",
-	);
-	console.log("  format                   Parse and re-format to texto markup");
-	console.log("  --help                   Show this help");
-	console.log("  --version                Show version");
+	console.log("Arguments:");
+	console.log("  file                    Input file (reads stdin if omitted)");
+	console.log("");
+	console.log("Input format is inferred from file extension when --from=auto:");
+	console.log("  .txto                   Texto markup");
+	console.log("  .md, .markdown          Markdown");
+	console.log("  .html, .htm             HTML");
+	console.log("");
+	console.log("Output format is inferred from --output when --to=auto:");
+	console.log("  .txto                   Texto markup");
+	console.log("  .md, .markdown          Markdown");
+	console.log("  .html, .htm             HTML");
+	console.log("  .json                   JSON AST");
+	console.log("  .xml                    XML AST");
 	console.log("");
 	console.log("Examples:");
-	console.log("  texto doc.txto                    # Parse and output HTML");
-	console.log("  texto -f markdown doc.md         # Force markdown profile");
-	console.log("  texto -t json -o out.json doc    # JSON output to file");
-	console.log("  texto parse doc.md               # Export AST as JSON");
-	console.log("  texto format doc.md              # Convert to texto markup");
-	console.log("  echo '# Hi' | texto               # Parse stdin");
+	console.log("  texto doc.txto");
+	console.log("  texto -f markdown -t html doc.md");
+	console.log("  texto -f html -t texto doc.html");
+	console.log("  texto -t markdown -o out.md doc.txto");
+	console.log("  echo '# Hi' | texto -f markdown -t json");
 }
 
-// Run CLI
 if (import.meta.main) {
 	main().catch((error) => {
 		console.error(`Fatal error: ${error}`);
@@ -323,11 +222,7 @@ if (import.meta.main) {
 	});
 }
 
-// ----------------------------------------------------------------------------
-//
-// EXPORTS
-//
-// ----------------------------------------------------------------------------
-export { formatCommand, main, parseCommand };
+export type { CLIOptions };
+export { main, renderCommand };
 
 // EOF

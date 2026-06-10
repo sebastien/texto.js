@@ -164,7 +164,7 @@ class ParagraphParser extends BaseBlockParser {
 
 		// Create paragraph node with position
 		const node = context.builder.createAndAppend(
-			"p",
+			"paragraph",
 			{},
 			{
 				start,

@@ -196,7 +196,7 @@ class IndentedPreBlockParser extends BaseBlockParser {
 
 		// Create pre node with position
 		const node = context.builder.createAndAppend(
-			"pre",
+			"preformatted",
 			{},
 			{
 				start,

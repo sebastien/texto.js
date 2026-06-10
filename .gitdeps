@@ -1,1 +1,4 @@
+deps/sdk git@github.com:littletoolkit/littlesdk.git main
 deps/md https://github.com/karlcow/markdown-testsuite.git master 92d125d8d97f1c01191c84404b13319f60b38502
+deps/domish.js git@github.com:sebastien/domish.js.git main
+

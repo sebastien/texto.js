@@ -20,7 +20,7 @@ describe("Python corpus fenced block test", () => {
 		// Find all pre elements recursively
 		const findPreElements = (node: any): any[] => {
 			const results: any[] = [];
-			if (node.name === "pre") {
+			if (node.name === "preformatted") {
 				results.push(node);
 			}
 			if (node.children) {

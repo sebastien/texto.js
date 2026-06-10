@@ -121,7 +121,7 @@ describe("IndentedPreBlockParser parsing", () => {
 		const result = parser.process(cursor, context, info!);
 
 		expect(result.node).not.toBeUndefined();
-		expect(result.node!.name).toBe("pre");
+		expect(result.node!.name).toBe("preformatted");
 		expect(result.node!.attributes.get("_format")).toBe("indented");
 		expect(result.node!.children[0].content).toBe("line1");
 	});
