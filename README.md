@@ -55,6 +55,7 @@ texto -f html -t texto doc.html             # Convert HTML to texto
 texto -f texto -t markdown doc.txto         # Convert texto to markdown
 texto -t json -o out.json doc.txto          # Write JSON AST
 echo '# Hi' | texto -f markdown -t html     # Convert stdin markdown to HTML
+texto --body-only doc.txto                  # Emit only the inner HTML body content
 ```
 
 ### API
@@ -66,6 +67,7 @@ echo '# Hi' | texto -f markdown -t html     # Convert stdin markdown to HTML
 - `DocumentBuilder`: stack-based document tree builder with header/content/references/appendices sections.
 - `parseFrontend(input, format, options?)`: parse input via `"texto"`, `"markdown"`, or `"html"` frontends.
 - `renderBackend(doc, format, options?)`: render AST to `"texto"`, `"markdown"`, `"html"`, `"json"`, or `"xml"`.
+- HTML rendering accepts `{ bodyOnly: true }` to emit only the inner body content.
 - `formatJSON(doc, options?)`: serialize AST to pretty-printed JSON.
 - `formatTexto(doc)`: round-trip AST back to texto markup.
 - `formatMarkdown(doc)`: render AST to CommonMark-style Markdown.

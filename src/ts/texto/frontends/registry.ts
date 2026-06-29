@@ -7,22 +7,23 @@
 // Registers input frontends and exposes parsing helpers.
 
 import type { Document } from "../utils/types.ts";
+import { Registry } from "../utils/registry.ts";
 import { htmlFrontend } from "./html.ts";
 import { markdownFrontend } from "./markdown.ts";
 import { textoFrontend } from "./texto.ts";
 import type { FrontendOptions, InputFrontend } from "./types.ts";
 
-const FRONTENDS: Record<string, InputFrontend> = {
-	texto: textoFrontend,
-	markdown: markdownFrontend,
-	md: markdownFrontend,
-	html: htmlFrontend,
-};
+// Use the common Registry abstraction for frontend storage
+const FRONTENDS = new Registry<string, InputFrontend>();
+FRONTENDS.register("texto", textoFrontend);
+FRONTENDS.register("markdown", markdownFrontend);
+FRONTENDS.register("md", markdownFrontend);
+FRONTENDS.register("html", htmlFrontend);
 
-type FrontendFormat = keyof typeof FRONTENDS;
+type FrontendFormat = string;
 
 function getAvailableFrontends(): FrontendFormat[] {
-	return Object.keys(FRONTENDS) as FrontendFormat[];
+	return FRONTENDS.keys();
 }
 
 function parseFrontend(
@@ -31,7 +32,7 @@ function parseFrontend(
 	options: FrontendOptions = {},
 ): Document {
 	const normalized = format.toLowerCase();
-	const frontend = FRONTENDS[normalized];
+	const frontend = FRONTENDS.get(normalized);
 
 	if (!frontend) {
 		const available = getAvailableFrontends().join(", ");

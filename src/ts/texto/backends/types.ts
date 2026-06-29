@@ -17,8 +17,10 @@ import type { Document } from "../utils/types.ts";
 // Type: BackendOptions
 // Configures optional backend rendering behavior.
 // - includePositions: boolean | undefined - Includes source positions in rendered output.
+// - bodyOnly: boolean | undefined - Emits only the inner HTML body content.
 interface BackendOptions {
 	includePositions?: boolean;
+	bodyOnly?: boolean;
 }
 
 // Type: OutputBackend

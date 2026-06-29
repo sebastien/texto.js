@@ -32,6 +32,7 @@ import { ImageParser } from "../parsers/inline/image.ts";
 import { LinkParser } from "../parsers/inline/link.ts";
 import { TextParser } from "../parsers/inline/text.ts";
 import { MarkdownParser } from "../parsers/markdown-parser.ts";
+import { BLOCK_PRIORITIES, INLINE_PRIORITIES } from "../parsing/priority.ts";
 
 // Type: MarkdownProfileOptions
 // Configures optional parser additions and markdown profile features.
@@ -56,26 +57,26 @@ function createMarkdownParser(
 	options: MarkdownProfileOptions = {},
 ): MarkdownParser {
 	// Block parsers in priority order (lower number = higher priority)
-	// ListParser must come BEFORE SectionParser (priority 25) to avoid
+	// ListParser must come BEFORE SectionParser (BLOCK_PRIORITIES.SECTION) to avoid
 	// "1." being matched as a section number instead of a list item
 	const blockParsers: BlockParser[] = [
-		new HorizontalRuleParser(), // Priority: 10
-		new HeaderParser(), // Priority: 25 (handles # headers and underline)
+		new HorizontalRuleParser(), // BLOCK_PRIORITIES.SEPARATOR + 2
+		new HeaderParser(), // BLOCK_PRIORITIES.SECTION - 1 (handles # headers and underline)
 		new ListParser({
-			priority: 24,
+			priority: BLOCK_PRIORITIES.SECTION - 1,
 			stripContinuationIndent: false,
 			orderedMarker: ".",
 			includeBoundaryBlankLine: true,
-		}), // Priority: 24 (handles -, *, 1. lists - must be before SectionParser)
-		new BlockquoteParser(), // Priority: 28
-		new ReferenceDefinitionParser(), // Priority: 38 ([ref]: url)
-		new IndentedCodeParser(), // Priority: 20 (4-space indented)
-		new ParagraphParser(), // Priority: 50 (fallback)
+		}), // (handles -, *, 1. lists - must be before SectionParser)
+		new BlockquoteParser(), // BLOCK_PRIORITIES.TABLE + 1
+		new ReferenceDefinitionParser(), // BLOCK_PRIORITIES.REFERENCE ([ref]: url)
+		new IndentedCodeParser(), // BLOCK_PRIORITIES.PRE + 2 (4-space indented)
+		new ParagraphParser(), // BLOCK_PRIORITIES.PARAGRAPH (fallback)
 	];
 
 	// Add fenced code blocks if enabled (covers extensions)
 	if (options.enableFencedCode !== false) {
-		blockParsers.unshift(new FencedBlockParser()); // Priority: 18
+		blockParsers.unshift(new FencedBlockParser()); // BLOCK_PRIORITIES.PRE
 	}
 
 	// Merge extra block parsers
@@ -86,12 +87,12 @@ function createMarkdownParser(
 	// Inline parsers in priority order
 	// Parsers are sorted by priority, lower numbers run first
 	const inlineParsers: InlineParser[] = [
-		new EscapeParser(), // Priority: 5 (backslash escapes)
-		new LinkParser(), // Priority: 15 ([text](url) and [text][ref])
-		new ImageParser(), // Priority: 15 (![alt](url) and ![alt][ref])
-		new CodeParser(), // Priority: 25 (`inline code`)
-		new EmphasisParser(), // Priority: 35 (*italic* and **bold**)
-		new TextParser(), // Priority: 100 (fallback)
+		new EscapeParser(), // INLINE_PRIORITIES.ESCAPED (backslash escapes)
+		new LinkParser(), // INLINE_PRIORITIES.LINK ([text](url) and [text][ref])
+		new ImageParser(), // INLINE_PRIORITIES.LINK (![alt](url) and ![alt][ref])
+		new CodeParser(), // INLINE_PRIORITIES.CODE (`inline code`)
+		new EmphasisParser(), // INLINE_PRIORITIES.EMPHASIS (*italic* and **bold**)
+		new TextParser(), // INLINE_PRIORITIES.TEXT (fallback)
 	];
 
 	// Merge extra inline parsers

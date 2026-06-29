@@ -11,15 +11,17 @@
 // IMPLEMENTATION
 //
 // ----------------------------------------------------------------------------
-// Priority levels for parser ordering
+// Canonical priority enum (adopted as single source of truth for coarse levels)
+import { Priority } from "../utils/types.ts";
 
-const HIGHEST = 0;
-const HIGH = 10;
-const NORMAL = 20;
-const LOW = 30;
-const LOWEST = 40;
+// Coarse priority levels (re-exported from canonical enum for convenience)
+const HIGHEST = Priority.HIGHEST;
+const HIGH = Priority.HIGH;
+const NORMAL = Priority.NORMAL;
+const LOW = Priority.LOW;
+const LOWEST = Priority.LOWEST;
 
-// Default priority for block parsers (ordered by priority)
+// Default priority for block parsers (ordered by priority, values on the Priority scale)
 const BLOCK_PRIORITIES = {
 	COMMENT: 5, // Comments should be first
 	SEPARATOR: 8, // Content separators
@@ -32,10 +34,10 @@ const BLOCK_PRIORITIES = {
 	DEFINITION: 32, // Definition lists
 	LIST: 35, // Lists
 	REFERENCE: 38, // Reference entries
-	PARAGRAPH: 50, // Default/fallback
+	PARAGRAPH: 50, // Default/fallback (beyond LOWEST for explicit last)
 } as const;
 
-// Default priority for inline parsers
+// Default priority for inline parsers (values on the Priority scale)
 const INLINE_PRIORITIES = {
 	ESCAPED: 5, // Escaped content
 	COMMENT: 8, // Inline comments
@@ -52,7 +54,7 @@ const INLINE_PRIORITIES = {
 	STRIKETHROUGH: 55, // ~~strike~~
 	BREAK: 60, // Line breaks
 	ENTITY: 65, // &entities;
-	TEXT: 100, // Default/fallback
+	TEXT: 100, // Default/fallback (explicit last)
 } as const;
 
 // ----------------------------------------------------------------------------
@@ -68,6 +70,7 @@ export {
 	LOW,
 	LOWEST,
 	NORMAL,
+	Priority,
 };
 
 // EOF

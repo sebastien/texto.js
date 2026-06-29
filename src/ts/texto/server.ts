@@ -4,24 +4,19 @@
 // Created: 2026-04-15
 
 // Module: texto/server
-// Implements the server module for texto parsing and formatting workflows.
+// Executable + full surface entry point (Node / CLI).
+// Re-exports the complete API (web + HTML frontend + CLI) and runs the CLI when invoked directly.
 
-// ----------------------------------------------------------------------------
-//
-// IMPLEMENTATION
-//
-// ----------------------------------------------------------------------------
-// Texto Parser - Server/CLI Entry Point
-// Re-exports all browser-safe APIs plus Node.js-specific CLI functionality
+// Full surface (includes HTML frontend + CLI)
+export * from "./cli.ts";
 
-// Import CLI functionality
-import { main, renderCommand } from "./cli/index.ts";
+// -----------------------------------------------------------------------------
+// Executable behavior
+// -----------------------------------------------------------------------------
 
-// Re-export CLI functionality
+import { main } from "./cli/index.ts";
 
-// Re-export all browser-safe APIs from core index
-
-// Run CLI when executed directly
+// Run CLI when executed directly (e.g. `bun run src/ts/texto/server.ts` or compiled binary)
 if (import.meta.main) {
 	main().catch((error) => {
 		console.error(`Fatal error: ${error}`);
@@ -29,12 +24,6 @@ if (import.meta.main) {
 	});
 }
 
-export * from "./index.ts";
-// ----------------------------------------------------------------------------
-//
-// EXPORTS
-//
-// ----------------------------------------------------------------------------
-export { main, renderCommand };
+export { main, renderCommand } from "./cli/index.ts";
 
 // EOF

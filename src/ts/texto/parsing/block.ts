@@ -15,7 +15,7 @@
 // Class: BlockParsingEngine
 // Selects and executes block parsers for the active parsing context.
 
-import type { BlockParser } from "../parsers/block/paragraph.ts";
+import type { BlockParser } from "../parsers/block/base.ts";
 import type { Cursor } from "../utils/cursor.ts";
 import type { BlockResult } from "../utils/types.ts";
 import type { ParsingContext } from "./context.ts";

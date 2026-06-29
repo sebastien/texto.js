@@ -18,6 +18,7 @@ interface CLIOptions {
 	profile?: "texto" | "markdown" | "md" | "html" | "auto";
 	format?: "texto" | "markdown" | "html" | "json" | "xml" | "auto";
 	includePositions?: boolean;
+	bodyOnly?: boolean;
 	strict?: boolean;
 }
 
@@ -59,6 +60,12 @@ const mainParams: CLIParams = {
 		long: "positions",
 		type: "boolean",
 		description: "Include source positions in JSON/XML output",
+	},
+	bodyOnly: {
+		name: "bodyOnly",
+		long: "body-only",
+		type: "boolean",
+		description: "Emit only the inner HTML body content",
 	},
 	strict: {
 		name: "strict",
@@ -142,6 +149,7 @@ async function renderCommand(options: CLIOptions): Promise<string> {
 	const doc = parseFrontend(input, inputFormat, { strict: options.strict });
 	return renderBackend(doc, outputFormat, {
 		includePositions: options.includePositions,
+		bodyOnly: options.bodyOnly,
 	});
 }
 
@@ -183,6 +191,7 @@ async function main(): Promise<void> {
 		profile: parsed.from as CLIOptions["profile"],
 		format,
 		includePositions: parsed.positions as boolean,
+		bodyOnly: parsed.bodyOnly as boolean,
 		strict: parsed.strict as boolean,
 	});
 

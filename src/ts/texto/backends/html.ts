@@ -217,12 +217,14 @@ function renderNode(node: Node): string {
 	}
 }
 
-const htmlBackend: OutputBackend = (doc: Document): string => {
+const htmlBackend: OutputBackend = (doc: Document, options = {}): string => {
 	const titleNode = doc.header.children.find(
 		(child) => child.type === "element" && child.name === "title",
 	);
 	const titleText = titleNode ? renderChildren(titleNode) : "Texto Document";
 	const body = renderChildren(doc.content);
+
+	if (options.bodyOnly) return body;
 
 	return [
 		"<!doctype html>",

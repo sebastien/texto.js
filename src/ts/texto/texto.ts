@@ -38,6 +38,7 @@ import { ReferenceCollectionPhase } from "./parsing/phases/reference-collection.
 import { PhaseRegistry } from "./parsing/phases/registry.ts";
 import type { PreParsePhase } from "./parsing/phases/types.ts";
 import { ParserRegistry } from "./parsing/registry.ts";
+import { BLOCK_PRIORITIES, INLINE_PRIORITIES } from "./parsing/priority.ts";
 import { Cursor } from "./utils/cursor.ts";
 import type { Document, Node } from "./utils/types.ts";
 
@@ -111,27 +112,48 @@ class TextoParser {
 	}
 
 	private registerDefaultParsers(): void {
-		// Register default block parsers
-		this.blockRegistry.register(new TaggedBlockParser(), 12);
-		this.blockRegistry.register(new FencedBlockParser(), 18); // Fenced pre blocks (preferred)
-		this.blockRegistry.register(new IndentedPreBlockParser(), 19); // Old-style indented pre blocks
-		this.blockRegistry.register(new SectionParser(), 25);
-		this.blockRegistry.register(new DefinitionListParser(), 32);
-		this.blockRegistry.register(new ReferenceDefinitionParser(), 38);
+		// Register default block parsers (using BLOCK_PRIORITIES for consistency)
+		this.blockRegistry.register(
+			new TaggedBlockParser(),
+			BLOCK_PRIORITIES.TAGGED,
+		);
+		this.blockRegistry.register(
+			new FencedBlockParser(),
+			BLOCK_PRIORITIES.PRE,
+		); // Fenced pre blocks (preferred)
+		this.blockRegistry.register(
+			new IndentedPreBlockParser(),
+			BLOCK_PRIORITIES.PRE + 1,
+		); // Old-style indented pre blocks (after fenced)
+		this.blockRegistry.register(
+			new SectionParser(),
+			BLOCK_PRIORITIES.SECTION,
+		);
+		this.blockRegistry.register(
+			new DefinitionListParser(),
+			BLOCK_PRIORITIES.DEFINITION,
+		);
+		this.blockRegistry.register(
+			new ReferenceDefinitionParser(),
+			BLOCK_PRIORITIES.REFERENCE,
+		);
 		this.blockRegistry.register(
 			new ListParser({
 				stripContinuationIndent: true,
 				orderedMarker: ")",
 				includeBoundaryBlankLine: false,
 			}),
-			35,
+			BLOCK_PRIORITIES.LIST,
 		);
 		// Add more as implemented...
 
-		// Register default inline parsers
-		this.inlineRegistry.register(new LinkParser(), 15);
-		this.inlineRegistry.register(new CodeParser(), 25);
-		this.inlineRegistry.register(new EmphasisParser(), 35);
+		// Register default inline parsers (using INLINE_PRIORITIES for consistency)
+		this.inlineRegistry.register(new LinkParser(), INLINE_PRIORITIES.LINK);
+		this.inlineRegistry.register(new CodeParser(), INLINE_PRIORITIES.CODE);
+		this.inlineRegistry.register(
+			new EmphasisParser(),
+			INLINE_PRIORITIES.EMPHASIS,
+		);
 		// Add more as implemented...
 	}
 

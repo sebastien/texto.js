@@ -15,12 +15,6 @@
 
 import type { Node } from "./node.ts";
 
-function getParent(_node: Node): Node | null {
-	// In this implementation, parent tracking is done externally
-	// via the builder's node stack
-	return null;
-}
-
 function getChildren(node: Node): Node[] {
 	return node.children;
 }
@@ -66,8 +60,6 @@ function getElementsByName(node: Node, name: string): Node[] {
 	return findDescendants(node, name);
 }
 
-// Backwards compatibility alias
-
 // ----------------------------------------------------------------------------
 //
 // EXPORTS
@@ -79,10 +71,8 @@ export {
 	findDescendants,
 	getChildren,
 	getElementsByName,
-	type getElementsByTagName,
 	getFirstChild,
 	getLastChild,
-	getParent,
 };
 
 // EOF

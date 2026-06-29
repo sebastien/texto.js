@@ -43,4 +43,17 @@ describe("texto CLI type flags", () => {
 		expect(proc.exitCode).toBe(0);
 		expect(proc.stdout.toString()).toContain('<ast type="document">');
 	});
+
+	test("supports --body-only", () => {
+		const proc = Bun.spawnSync(
+			[process.execPath, "run", cliPath, "--body-only", fixturePath],
+			{
+				stdout: "pipe",
+				stderr: "pipe",
+			},
+		);
+
+		expect(proc.exitCode).toBe(0);
+		expect(proc.stdout.toString()).toBe("<p>Hello world</p>\n");
+	});
 });

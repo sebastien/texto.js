@@ -15,7 +15,7 @@
 // Class: InlineParsingEngine
 // Resolves and applies inline parser matches over a bounded text range.
 
-import type { InlineParser } from "../parsers/inline/text.ts";
+import type { InlineParser } from "../parsers/inline/base.ts";
 import type { Cursor } from "../utils/cursor.ts";
 import type { InlineMatch, Node } from "../utils/types.ts";
 import type { ParsingContext } from "./context.ts";

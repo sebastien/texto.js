@@ -3,6 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { renderCommand } from "../src/ts/texto/cli/index";
+import { renderBackend } from "../src/ts/texto/backends/index";
+import { parseFrontend } from "../src/ts/texto/frontends/registry";
 
 describe("parse output backends", () => {
 	let tempDir: string;
@@ -62,6 +64,23 @@ describe("parse output backends", () => {
 		const output = await renderCommand({ file: fixturePath, format: "html" });
 		expect(output).toContain("<!doctype html>");
 		expect(output).toContain("<p>Hello world</p>");
+	});
+
+	test("supports body-only html rendering", async () => {
+		const doc = parseFrontend("Hello world\n", "texto");
+		const output = renderBackend(doc, "html", { bodyOnly: true });
+
+		expect(output).toBe("<p>Hello world</p>");
+	});
+
+	test("supports body-only html rendering through renderCommand", async () => {
+		const output = await renderCommand({
+			file: fixturePath,
+			format: "html",
+			bodyOnly: true,
+		});
+
+		expect(output).toBe("<p>Hello world</p>");
 	});
 
 	test("parses strong inline markup inside tight list items", async () => {

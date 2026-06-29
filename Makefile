@@ -1,5 +1,6 @@
 #  LittleSDK Bootstrapping
-KIT_PATH=deps/sdk
-include $(if $(KIT_PATH),$(shell test ! -e "$(KIT_PATH)/setup.mk" && git clone git@github.com:littletoolkit/littlesdk.git "$(KIT_PATH)";echo "$(KIT_PATH)/setup.mk"))
+SDK_PATH=deps/sdk
+SDK_MODULES=js
+include $(if $(SDK_PATH),$(shell test ! -e "$(SDK_PATH)/setup.mk" && git clone git@github.com:littletoolkit/littlesdk.git "$(SDK_PATH)";echo "$(SDK_PATH)/setup.mk"))
 # EOF
 
