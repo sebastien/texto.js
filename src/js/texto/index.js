@@ -1,4 +1,5 @@
 export {
+  BACKENDS,
   getAvailableBackends,
   htmlBackend,
   jsonBackend,
@@ -52,32 +53,23 @@ export {
   getFirstChild,
   getLastChild
 } from "./document/tree.js";
-import { markdownFrontend } from "./frontends/markdown.js";
-import { textoFrontend } from "./frontends/texto.js";
-import { Registry } from "./utils/registry.js";
+export {
+  DefaultNodeFactory,
+  FrontEndProcessor,
+  htmlFrontend,
+  htmlToDocument,
+  htmlToTexto,
+  setHtmlParser
+} from "./frontends/html.js";
 export { markdownFrontend } from "./frontends/markdown.js";
 export { textoFrontend } from "./frontends/texto.js";
-const WEB_FRONTENDS = new Registry;
-WEB_FRONTENDS.register("texto", textoFrontend);
-WEB_FRONTENDS.register("markdown", markdownFrontend);
-WEB_FRONTENDS.register("md", markdownFrontend);
-function getAvailableFrontends() {
-  return WEB_FRONTENDS.keys();
-}
+import { FRONTENDS, getAvailableFrontends, parseFrontend } from "./frontends/index.js";
+export { FRONTENDS, getAvailableFrontends, parseFrontend };
 function parse(input, format, options = {}) {
   return parseFrontend(input, format, options);
 }
-function parseFrontend(input, format, options = {}) {
-  const normalized = format.toLowerCase();
-  const frontend = WEB_FRONTENDS.get(normalized);
-  if (!frontend) {
-    const available = getAvailableFrontends().join(", ");
-    throw new Error(`Unknown input type: ${format}. Available frontends: ${available}`);
-  }
-  return frontend(input, options);
-}
 
-export { getAvailableFrontends, parse, parseFrontend };
+export { parse };
 export {
   BaseBlockParser
 } from "./parsers/block/base.js";

@@ -1,5 +1,19 @@
 {
-  "dependencies": {
+  "name": "@texto/texto",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/js/texto/index.js",
+    "./server": "./src/js/texto/server/index.js"
+  },
+  "bin": {
+    "texto": "./bin/texto"
+  },
+  "scripts": {
+    "build": "bun build ./src/js/texto/index.js --minify --outfile dist/texto.min.js",
+    "test": "bun test"
+  },
+  "devDependencies": {
     "fast-diff": "^1.3.0"
   }
 }

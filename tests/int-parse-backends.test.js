@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { renderCommand } from "../src/js/texto/cli/index.js";
+import { renderCommand } from "../src/js/texto/server/main.js";
 import { renderBackend } from "../src/js/texto/backends/index.js";
-import { parseFrontend } from "../src/js/texto/frontends/registry.js";
+import { parseFrontend } from "../src/js/texto/frontends/index.js";
 describe("parse output backends", () => {
   let tempDir;
   let fixturePath;

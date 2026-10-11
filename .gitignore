@@ -1,0 +1,8 @@
+# Third-party dependency checkouts, declared in .gitdeps and fetched by `make prep`.
+deps/
+
+node_modules/
+
+# Generated outputs (`npm run build`, `make build`).
+build/
+dist/

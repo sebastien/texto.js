@@ -1,4 +1,3 @@
-import { parse as parseWithDomish } from "../../../../deps/domish.js/src/ts/domish/xmlish.ts";
 import { formatTexto } from "../backends/texto.js";
 import { DocumentBuilder } from "../document/builder.js";
 import {
@@ -104,6 +103,14 @@ class DefaultNodeFactory {
     return this.element("markup", { tag, ...attributes });
   }
 }
+let htmlParseFallback = null;
+// Registers the parser used when DOMParser is unavailable (non-browser runtimes).
+// `engine` receives an HTML string and must return a DOM-ish element node; both a
+// document element (`<html>`, walked for its head/body) and a bare `<body>` are
+// accepted by FrontEndProcessor. Pass `null` to clear a registered fallback.
+function setHtmlParser(engine) {
+  htmlParseFallback = engine ?? null;
+}
 function parseHTML(html) {
   if (typeof DOMParser !== "undefined") {
     const Parser = DOMParser;
@@ -111,8 +118,10 @@ function parseHTML(html) {
     const doc = parser.parseFromString(html, "text/html");
     return doc.documentElement;
   }
-  const doc = parseWithDomish(html);
-  return doc.body;
+  if (htmlParseFallback) {
+    return htmlParseFallback(html);
+  }
+  throw new Error("HTML input requires DOMParser (browser) or a fallback HTML parser. Use the server entry point (@texto/texto/server) or register one with setHtmlParser().");
 }
 
 class FrontEndProcessor {
@@ -626,5 +635,6 @@ export {
   FrontEndProcessor,
   htmlFrontend,
   htmlToDocument,
-  htmlToTexto
+  htmlToTexto,
+  setHtmlParser
 };

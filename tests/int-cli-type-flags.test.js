@@ -5,7 +5,7 @@ import { tmpdir } from "os";
 describe("texto CLI type flags", () => {
   let tempDir;
   let fixturePath;
-  const cliPath = join(import.meta.dirname, "../src/js/texto/cli/index.js");
+  const cliPath = join(import.meta.dirname, "../src/js/texto/server/main.js");
   beforeAll(() => {
     tempDir = mkdtempSync(join(tmpdir(), "texto-cli-"));
     fixturePath = join(tempDir, "sample.txto");

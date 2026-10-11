@@ -2,8 +2,8 @@
 # Texto CLI wrapper script
 # Runs the JavaScript Texto parser using bun
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(CDPATH= cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Run the texto CLI with bun (using server.js for full Node.js API access)
-exec bun run "${PROJECT_ROOT}/src/js/texto/server.js" "$@"
+# Run the texto CLI with bun (using bin.js for full Node.js API access)
+exec bun run "${PROJECT_ROOT}/src/js/texto/server/bin.js" "$@"

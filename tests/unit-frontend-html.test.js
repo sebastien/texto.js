@@ -5,7 +5,7 @@ import { join } from "node:path";
 import {
   Document as DOMDocument
 } from "../deps/domish.js/src/ts/domish/domish";
-import { main } from "../src/js/texto/cli/index.js";
+import { main } from "../src/js/texto/server/main.js";
 import {
   DefaultNodeFactory,
   FrontEndProcessor,
@@ -13,6 +13,7 @@ import {
   htmlToTexto
 } from "../src/js/texto/frontends/html.js";
 import { TextoParser } from "../src/js/texto/index.js";
+import "../src/js/texto/server/domish.js";
 describe("HTML frontend", () => {
   describe("DefaultNodeFactory", () => {
     test("creates semantic Texto nodes", () => {

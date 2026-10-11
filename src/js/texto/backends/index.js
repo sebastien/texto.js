@@ -24,6 +24,7 @@ function renderBackend(doc, format, options = {}) {
 }
 
 export {
+  BACKENDS,
   getAvailableBackends,
   htmlBackend,
   jsonBackend,

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { renderCommand } from "../src/js/texto/cli/index.js";
+import { renderCommand } from "../src/js/texto/server/main.js";
 describe("texto profile syntax", () => {
   let tempDir;
   let fixturePath;

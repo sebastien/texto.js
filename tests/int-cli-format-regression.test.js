@@ -5,7 +5,7 @@ import { tmpdir } from "os";
 describe("texto CLI texto-backend regression", () => {
   let tempDir;
   let fixturePath;
-  const cliPath = join(import.meta.dirname, "../src/js/texto/cli/index.js");
+  const cliPath = join(import.meta.dirname, "../src/js/texto/server/main.js");
   beforeAll(() => {
     tempDir = mkdtempSync(join(tmpdir(), "texto-format-"));
     fixturePath = join(tempDir, "regression.txto");

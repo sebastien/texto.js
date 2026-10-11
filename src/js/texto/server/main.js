@@ -1,6 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { renderBackend } from "../backends/index.js";
-import { parseFrontend } from "../frontends/registry.js";
+import { parseFrontend } from "../frontends/index.js";
+// Side-effect import: registers the domish HTML fallback so `-f html` works
+// outside a browser. Owned by this module because it is what actually parses
+// HTML; the server surface (index.js) inherits it by re-exporting from here.
+import "./domish.js";
 import { args, help } from "../utils/cli.js";
 const version = "1.0.0";
 const meta = {
