@@ -8,7 +8,7 @@ This patch can then be applied to the existing AST to update it in-place, effici
 
 ## 2. Data Structures
 
-To formally describe text modifications and AST delta patches, new types will be introduced (e.g., in `src/ts/texto/parsing/incremental.ts`).
+To formally describe text modifications and AST delta patches, new types will be introduced (e.g., in `src/js/texto/parsing/incremental.js`).
 
 ### 2.1 Text Edit
 

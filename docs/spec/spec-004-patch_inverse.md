@@ -14,7 +14,7 @@ We'd like to add a texto/delta module that does this:
 
 ## Implementation Details
 
-**Location:** `src/ts/texto/delta.ts`
+**Location:** `src/js/texto/delta.js`
 
 ### Types
 We will use a lightweight variant of Quill Delta that omits rich-text attributes, focusing purely on plain text mutations:

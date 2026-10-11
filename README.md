@@ -7,7 +7,7 @@
 ```
 
 *Textp.js* is a structured document parsing and formatting library in
-TypeScript. It parses markup text — both the texto native format and
+vanilla JavaScript. It parses markup text — both the texto native format and
 standard Markdown — into a normalized AST document model, then renders
 that AST into HTML, JSON, XML, or back to the original markup.
 
@@ -26,7 +26,7 @@ You can learn more about each component:
 
 ## In a nutshell
 
-```typescript
+```javascript
 import { TextoParser, formatJSON, renderBackend, formatTexto } from "@texto/texto"
 
 const markup = `
@@ -86,21 +86,21 @@ texto --body-only doc.txto                  # Emit only the inner HTML body cont
 
 ### Modules
 
-- [`src/ts/texto/parsers/`](src/ts/texto/parsers/): block and inline parser implementations.
-- [`src/ts/texto/parsing/`](src/ts/texto/parsing/): parsing engines, context, registry, phases, incremental support.
-- [`src/ts/texto/profiles/`](src/ts/texto/profiles/): pre-configured parser profiles (texto, markdown).
-- [`src/ts/texto/document/`](src/ts/texto/document/): AST node creation, tree traversal, document builder.
-- [`src/ts/texto/backends/`](src/ts/texto/backends/): output renderers (texto, markdown, HTML, JSON, XML).
-- [`src/ts/texto/frontends/`](src/ts/texto/frontends/): input frontends (texto, markdown, HTML).
-- [`src/ts/texto/cli/`](src/ts/texto/cli/): command-line interface.
-- [`src/ts/texto/delta.ts`](src/ts/texto/delta.ts): text diff and delta operations.
+- [`src/js/texto/parsers/`](src/js/texto/parsers/): block and inline parser implementations.
+- [`src/js/texto/parsing/`](src/js/texto/parsing/): parsing engines, context, registry, phases, incremental support.
+- [`src/js/texto/profiles/`](src/js/texto/profiles/): pre-configured parser profiles (texto, markdown).
+- [`src/js/texto/document/`](src/js/texto/document/): AST node creation, tree traversal, document builder.
+- [`src/js/texto/backends/`](src/js/texto/backends/): output renderers (texto, markdown, HTML, JSON, XML).
+- [`src/js/texto/frontends/`](src/js/texto/frontends/): input frontends (texto, markdown, HTML).
+- [`src/js/texto/cli/`](src/js/texto/cli/): command-line interface.
+- [`src/js/texto/delta.js`](src/js/texto/delta.js): text diff and delta operations.
 - [`docs/ref-texto.md`](docs/ref-texto.md): complete texto markup language reference.
 
 ### Notable examples
 
-- [`examples/helloworld.ts`](examples/helloworld.ts): parse texto markup and traverse the AST with source positions.
-- [`examples/delta.example.ts`](examples/delta.example.ts): text delta computation and application.
-- [`examples/parsing-incremental.example.ts`](examples/parsing-incremental.example.ts): incremental re-parsing on text edits.
+- [`examples/helloworld.js`](examples/helloworld.js): parse texto markup and traverse the AST with source positions.
+- [`examples/delta.example.js`](examples/delta.example.js): text delta computation and application.
+- [`examples/parsing-incremental.example.js`](examples/parsing-incremental.example.js): incremental re-parsing on text edits.
 
 # Features
 
@@ -111,4 +111,4 @@ texto --body-only doc.txto                  # Emit only the inner HTML body cont
 - *Text delta engine*: compute, apply, and revert text operations between strings.
 - *Multiple output formats*: HTML, JSON, XML, and round-trip back to markup.
 - *Full source position tracking*: every AST node carries start/end offset and line/column.
-- *No runtime dependencies*: pure TypeScript, works in Node.js and modern browsers.
+- *No runtime dependencies*: pure JavaScript, works in Node.js and modern browsers.
